@@ -1,5 +1,7 @@
 library(shiny)
+library(highcharter)
 library(dplyr)
+library(lubridate)
 library(bslib)
 library(bsicons)
 
@@ -7,24 +9,42 @@ int <- function(x) {
   as.integer(floor(x))
 }
 
-# Load your CSV data
-data <- read.csv("C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/mw_new.csv")
-# Determine the minimum and maximum dates in the CSV data
-min_date <- min(as.Date(data$Time))
-max_date <- max(as.Date(data$Time))
-# # Filter the data initially with the default date range
-# default_filtered_data <- data %>%
+# Load your CSV mw_data
+# Specify the file paths for both datasets
+mw_file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/mw_new.csv"
+file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/max_min_avg.csv"
+peakhours_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/peakhours.csv"  # Update with the correct path
+
+# Read the CSV files
+mw_data <- read.csv(mw_file_path)
+# Read the CSV files
+mw_data <- read.csv(mw_file_path)
+data <- read.csv(file_path)
+peakhours_data <- read.csv(peakhours_path)
+
+# Convert the "Time" column to POSIXct format
+data$Time <- as.POSIXct(data$Time, format = "%Y-%m-%d")
+peakhours_data$Time <- as.POSIXct(peakhours_data$Time, format = "%m/%d/%Y %H:%M")
+mw_data$Time <- as.POSIXct(mw_data$Time, format = "%Y-%m-%d %H:%M")
+
+# Initialize an empty global_df dataframe
+global_df <- data.frame(Time = as.POSIXct(character()), Name = character(), Energy = numeric())
+# Determine the minimum and maximum dates in the CSV mw_data
+min_date <- min(as.Date(mw_data$Time))
+max_date <- max(as.Date(mw_data$Time))
+# # Filter the mw_data initially with the default date range
+# default_filtered_data <- mw_data %>%
 #   filter(as.Date(Time) >= min_date, as.Date(Time) <= max_date)
-# Define a function to filter data and calculate total energy
-calculateCategoryEnergy <- function(data, category) {
-  filtered_data <- data %>%
+# Define a function to filter mw_data and calculate total energy
+calculateCategoryEnergy <- function(mw_data, category) {
+  filtered_data <- mw_data %>%
     filter(sub_categories_by_fuel %in% category)
   total_energy <- filtered_data %>%
     summarise(total_energy = sum(Energy_MWh))
   return(total_energy$total_energy)
 }
-# # Filter the data initially with the default date range
-# default_filtered_data <- data %>%
+# # Filter the mw_data initially with the default date range
+# default_filtered_data <- mw_data %>%
 #   filter(as.Date(Time) >= min_date, as.Date(Time) <= max_date)
 # 
 # # Calculate the total energy for Hydro power plants
@@ -131,7 +151,28 @@ ui <- fluidPage(page_navbar(
                   )
                   
                 )
-              )),
+              ),
+              card(
+                card_header(
+                  class = "bg-dark",
+                  "Peak Contribution By Individual Powerplant"
+                ),
+                # actionButton("calculateButton", "Filter"),
+                fluidRow(
+                  
+                  column(3, selectInput("date", "Select Date", choices = unique(data$Time), selected = unique(data$Time)[1])),
+                  column(4, selectInput("name", "Select Name", choices = NULL)),
+                  column(6),
+                  uiOutput("cards"),
+                    # Display the table output for the filtered data
+                    # tableOutput("table"),
+                    # tableOutput("hourlyData"),
+                    highchartOutput("areaspline_chart"),
+                 
+                  
+                )
+              )
+              ),
     nav_panel("Main", 
               layout_column_wrap(
                 width = "250px",
@@ -142,42 +183,11 @@ ui <- fluidPage(page_navbar(
 
 server <- function(input, output, session) {
   
-  
-  # output$totalPublicHydroEnergy <- renderText({
-  #   Public_hydro_energy <- calculateCategoryEnergy(default_filtered_data, "HYDEL")
-  #   paste(Public_hydro_energy, "MWh")
-  # })
-  # output$totalPrivateHydroEnergy <- renderText({
-  #   Private_hydro_energy <- calculateCategoryEnergy(default_filtered_data, "IPPS HYDEL HYDEL")
-  #   paste(Private_hydro_energy, "MWh")
-  # })
-  # output$totalHydroEnergy <- renderText({
-  #   hydro_energy <- calculateCategoryEnergy(default_filtered_data, c("HYDEL", "IPPS HYDEL HYDEL"))
-  #   paste(hydro_energy, "MWh")
-  # })
-  # 
-  # 
-  # 
-  # output$totalRenewableEnergy <- renderText({
-  #   renewable_energy <- calculateCategoryEnergy(default_filtered_data, c("IPPS BAGASSE BAGASSE", "SOLAR", "WIND"))
-  #   paste(renewable_energy, "MWh")
-  # })
-  # 
-  # output$totalNuclearEnergy <- renderText({
-  #   nuclear_energy <- calculateCategoryEnergy(default_filtered_data, c("NUCLEAR"))
-  #   paste(nuclear_energy, "MWh")
-  # })
-  # 
-  # output$totalThermalEnergy <- renderText({
-  #   thermal_energy <- calculateCategoryEnergy(default_filtered_data, c("IPPS FOSSIL FUEL Coal", "IPPS FOSSIL FUEL RLNG", "IPPS FOSSIL FUEL FO", "IPPS FOSSIL FUEL Gas", "GENCOS Gas", "GENCOS RLNG", "GENCOS Coal"))
-  #   paste(int(thermal_energy), "MWh")
-  # })
-  
   observe({
     start_date <- input$dateRange[1]
     end_date <- input$dateRange[2]
     
-    filtered_data <- data %>%
+    filtered_data <- mw_data %>%
       filter(as.Date(Time) >= start_date, as.Date(Time) <= end_date)
     
     total_Public_hydro_energy <- filtered_data %>%
@@ -189,9 +199,6 @@ server <- function(input, output, session) {
       summarise(total_energy = sum(Energy_MWh))
     
     total_hydro_energy <- total_Public_hydro_energy + total_Private_hydro_energy
-    # total_hydro_energy <- filtered_data %>%
-    #   filter(sub_categories_by_fuel %in% c("HYDEL", "IPPS HYDEL HYDEL")) %>%
-    #   summarise(total_energy = sum(Energy_MWh))
     
     total_solar_energy <- filtered_data %>%
       filter(sub_categories_by_fuel %in% c("SOLAR")) %>%
@@ -300,28 +307,140 @@ server <- function(input, output, session) {
       paste(int(total_thermal_energy$total_energy), "MWh")
     })
   })
+  
+  # Update the name filter choices based on the selected date
+  observeEvent(input$date, {
+    names_for_selected_date <- data$name[data$Time == input$date]
+    updateSelectInput(session, "name", choices = names_for_selected_date)
+  })
+  
+  # Append rows from peakhours_data to global_df
+  observe({
+    global_df <- global_df[0, ]
+    selected_date <- as.Date(input$date)
+    filtered_data <- peakhours_data[as.Date(peakhours_data$Time) == selected_date & peakhours_data$name == input$name, ]
+    global_df <<- rbind(global_df, data.frame(Time = as.POSIXct(filtered_data$Time, format = "%Y-%m-%d %H:%M:%S"), Name = filtered_data$name, Energy = filtered_data$peak_values))
+  })
+  
+  # Append rows from hourly_data to global_df
+  observe({
+    selected_date <- as.Date(input$date)
+    hourly_data <- mw_data[mw_data$Time >= selected_date & mw_data$Time < selected_date + lubridate::dhours(24) & mw_data$Name == input$name, c("Time", "Name", "Energy_MWh")]
+    global_df <<- rbind(global_df, data.frame(Time = as.POSIXct(hourly_data$Time, format = "%Y-%m-%d %H:%M:%S"), Name = hourly_data$Name, Energy = hourly_data$Energy_MWh))
+  })
+  
+  # output$table <- renderTable({
+  #   # Extract the date part from the selected date
+  #   selected_date <- as.Date(input$date)
+  #   
+  #   # Subset the data by the selected date and name from "peakhours_data"
+  #   filtered_data <- peakhours_data[as.Date(peakhours_data$Time) == selected_date & peakhours_data$name == input$name, ]
+  #   
+  #   # Format the "Time" column as datetime (adjust format as needed)
+  #   filtered_data$Time <- format(filtered_data$Time, "%Y-%m-%d %H:%M:%S")
+  #   
+  #   # Return the filtered data as a table
+  #   return(filtered_data)
+  # })
+  
+  # Render the cards
+  output$cards <- renderUI({
+    # Extract the date part from the selected date
+    selected_date <- as.Date(input$date)
+    
+    # Subset the data by the selected date and name from "peakhours_data"
+    filtered_data <- peakhours_data[as.Date(peakhours_data$Time) == selected_date & peakhours_data$name == input$name, ]
+    
+    # Format the "Time" column as datetime (adjust format as needed)
+    filtered_data$Time <- format(filtered_data$Time, "%Y-%m-%d %H:%M:%S")
+    
+    # Create a list of bslib cards
+    cards <- lapply(1:nrow(filtered_data), function(i) {
+      card(
+        card_header(filtered_data$Time[i]),
+        card_body(
+          p("Name:", filtered_data$name[i]),
+          p("Value:", filtered_data$peak_values[i])
+        )
+      )
+    })
+    
+    # Split the cards into two rows
+    rows <- list(
+      fluidRow(
+        column(2, cards[1]),
+        column(2, cards[2]),
+        column(2, cards[3]),
+        column(2, cards[4]),
+        column(2, cards[5]),
+        column(2, cards[6]),
+      ),
+      fluidRow(
+        
+        column(4, cards[7]),
+        column(4, cards[8]),
+        column(4, cards[9])
+      )
+    )
+    
+    # Return the rows of cards
+    tagList(rows)
+  })
+  
+  
+  # output$hourlyData <- renderTable({
+  #   # Extract the date part from the selected date
+  #   selected_date <- as.Date(input$date)
+  #   
+  #   # # Print some debugging information
+  #   # print(input$date) # Check the selected date
+  #   # print(input$name) # Check the selected name
+  #   
+  #   # Subset the mw_data by the selected date and name
+  #   hourly_data <- mw_data[mw_data$Time >= selected_date & mw_data$Time < selected_date + lubridate::dhours(24) & mw_data$Name == input$name, c("Time", "Name", "Energy_MWh")]
+  #   
+  #   # # Print some debugging information
+  #   # print(names(hourly_data)) # Check the column names
+  #   # print(unique(hourly_data$Name)) # Check unique "Name" values
+  #   
+  #   # Format the "Time" column as datetime (adjust format as needed)
+  #   hourly_data$Time <- format(hourly_data$Time, "%Y-%m-%d %H:%M:%S")
+  #   
+  #   # Return the 24-hour data as a table
+  #   return(hourly_data)
+  # })
+  
+  output$areaspline_chart <- renderHighchart({
+    # Filter the combined data based on user input
+    selected_date <- as.Date(input$date)
+    selected_name <- input$name
+    # Extract the date from the first row of global_df
+    date_variable <- as.Date(global_df$Time[1])
+    print(date_variable)
+    # Remove the date part from the Time column
+    global_df$Time <- format(global_df$Time, format = "%H:%M")
+    # Sort the records in global_df by the Time column
+    global_df <- global_df %>%
+      arrange(Time)
+    # print(filtered_data)
+    print(global_df)
+    
+    # Create the Highcharter chart
+    hc <- highchart() %>%
+      hc_title(text = "Area Spline Chart") %>%
+      hc_xAxis(type = "category", title = list(text = date_variable)) %>%
+      hc_yAxis(title = list(text = "Energy (MWh)")) %>%
+      hc_add_series(
+        data = global_df,
+        type = "areaspline", # Specify the chart type
+        hcaes(x = Time, y = Energy),
+        # hcaes(x = format(Time, "%Y-%m-%d %H:%M:%S"), y = Energy),
+        name = selected_name
+      )
+    
+    return(hc)
+  })
 }
-# 
-# server <- function(input, output, session) {
-#   observeEvent(input$calculateButton, {
-#     # Extract the start and end dates from the date range input
-#     start_date <- input$dateRange[1]
-#     end_date <- input$dateRange[2]
-#     
-#     # Filter the data based on the selected date range
-#     filtered_data <- data %>%
-#       filter(as.Date(Time) >= start_date, as.Date(Time) <= end_date)
-#     
-#     # Calculate the total energy for Hydro power plants
-#     total_hydro_energy <- filtered_data %>%
-#       filter(sub_categories_by_fuel %in% c("HYDEL", "IPPS HYDEL HYDEL")) %>%
-#       summarise(total_energy = sum(Energy_MWh))
-#     
-#     # Display the total energy in the output
-#     output$totalHydroEnergy <- renderText({
-#       paste("MWh", total_hydro_energy$total_energy)
-#     })
-#   })
-# }
+
 
 shinyApp(ui, server)

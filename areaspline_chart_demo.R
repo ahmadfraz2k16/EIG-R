@@ -114,14 +114,8 @@ mw_data$Time <- as.POSIXct(mw_data$Time, format = "%Y-%m-%d %H:%M")
 
 # Initialize an empty global_df dataframe
 global_df <- data.frame(Time = as.POSIXct(character()), Name = character(), Energy = numeric())
-# Initialize an empty global_df dataframe
-global_df_hourly_data <- data.frame(Time = as.POSIXct(character()), Name = character(), Energy = numeric())
-# Create a combined data frame
-combined_data <- bind_rows(
-  select(peakhours_data, Time, peak_values, name),
-  select(mw_data, Time, Energy_MWh, Name)
-) %>%
-  arrange(Time)
+
+
 
 # Define UI
 ui <- fluidPage(
