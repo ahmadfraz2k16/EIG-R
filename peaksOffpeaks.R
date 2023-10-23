@@ -26,28 +26,25 @@ ui <- fluidPage(
   # Date filter
   sidebarLayout(
     sidebarPanel(
-      selectInput("date", "Select Date", choices = uniqueDates, selected = uniqueDates[1]),
-      selectInput("name", "Select Name", choices = NULL)
+      selectInput("date_min_max_avg", "Select Date", choices = uniqueDates, selected = uniqueDates[1]),
+      selectInput("name_min_max_avg", "Select Name", choices = NULL)
     ),
     mainPanel(
-      # Display the table output
-      # tableOutput("table"),
-      # uiOutput("cards"),
-      uiOutput("valueBoxes")
+      uiOutput("valueBoxes_min_max_avg")
     )
   )
 )
 
 # Define server
 server <- function(input, output, session) {
-  observeEvent(input$date, {
-    names_for_selected_date <- data_min_max_avg$name[data_min_max_avg$Time == input$date]
-    updateSelectInput(session, "name", choices = names_for_selected_date)
+  observeEvent(input$date_min_max_avg, {
+    names_for_selected_date <- data_min_max_avg$name[data_min_max_avg$Time == input$date_min_max_avg]
+    updateSelectInput(session, "name_min_max_avg", choices = names_for_selected_date)
   })
   
-  output$valueBoxes <- renderUI({
+  output$valueBoxes_min_max_avg <- renderUI({
     # Subset the data_min_max_avg by the selected date and name
-    filtered_data <- data_min_max_avg[data_min_max_avg$Time == input$date & data_min_max_avg$name == input$name, ]
+    filtered_data <- data_min_max_avg[data_min_max_avg$Time == input$date_min_max_avg & data_min_max_avg$name == input$name_min_max_avg, ]
     # Convert the "Time" column to a character with the desired format
     filtered_data$Time <- format(filtered_data$Time, format = "%Y-%m-%d")
     
@@ -143,85 +140,6 @@ server <- function(input, output, session) {
     
     tagList(value_boxes)
   })
-  # # Update the name filter choices based on the selected date
-  # observeEvent(input$date, {
-  #   names_for_selected_date <- data$name[data$Time == input$date]
-  #   updateSelectInput(session, "name", choices = names_for_selected_date)
-  # })
-  # 
-  # # output$table <- renderTable({
-  # #   # Subset the data by the selected date and name
-  # #   filtered_data <- data[data$Time == input$date & data$name == input$name, ]
-  # #   # Convert the "Time" column to a character with the desired format
-  # #   filtered_data$Time <- format(filtered_data$Time, format = "%Y-%m-%d")
-  # #   # Return the filtered data as a table
-  # #   return(filtered_data)
-  # # })
-  # # Create a function to generate a Bootstrap card
-  # generate_card <- function(title, icon, value, unit, name) {
-  #   card_div <- tags$div(
-  #     class = "col-sm-12 col-md-4",
-  #     div(
-  #       class = "card",
-  #       style = "border: 1px solid #ccc;",
-  #       div(
-  #         class = "card-body",
-  #         div(
-  #           class = "d-flex flex-row",
-  #           div(
-  #             div(
-  #               class = "m-l-10 align-self-center",
-  #               h4(class = "m-b-0", title)
-  #             ),
-  #             div(
-  #               class = "ml-auto align-self-center",
-  #               h2(class = "font-medium m-b-0", value, span(class = "lead h6", unit),
-  #                  h5(class = "font-medium m-b-0", name)
-  #               )
-  #             )
-  #           )
-  #         )
-  #       )
-  #     )
-  #   )
-  #   return(card_div)
-  # }
-  # 
-  # # Render the cards
-  # output$cards <- renderUI({
-  #   # Extract the date part from the selected date
-  #   selected_date <- as.Date(input$date)
-  #   
-  #   # Subset the data by the selected date and name from "data"
-  #   filtered_data <- data[as.Date(data$Time) == selected_date & data$name == input$name, ]
-  #   
-  #   # Create a list of cards
-  #   cards <- list(
-  #     div(class = "container-fluid", id = "max_min",
-  #         div(
-  #           div(id = "cardContainer", class = "row justify-content-between",
-  #               div(class = "text-center", h4(class = "text-danger", paste0("ALL DAY : ", as.character(filtered_data$time_range_one)))),
-  #               generate_card("MAX", "ti-bolt", filtered_data$max_1, "MW", input$name),
-  #               generate_card("MIN", "ti-bolt", filtered_data$min_1, "MW", input$name),
-  #               generate_card("AVERAGE", "ti-bolt", int(filtered_data$average), "MW", input$name)
-  #           ),
-  #           div(id = "cardContainer", class = "row justify-content-between",
-  #               div(class = "text-center", h4(class = "text-danger", paste0("OFF-PEAK DURATION: ", as.character(filtered_data$time_range_two)))),
-  #               generate_card("MAX", "ti-bolt", filtered_data$max_2, "MW", input$name),
-  #               generate_card("MIN", "ti-bolt", filtered_data$min_2, "MW", input$name)
-  #           ),
-  #           div(id = "cardContainer", class = "row justify-content-between",
-  #               div(class = "text-center", h4(class = "text-danger", paste0("PEAK DURATION: ", as.character(filtered_data$time_range_three)))),
-  #               generate_card("MAX", "ti-bolt", filtered_data$max_3, "MW", input$name),
-  #               generate_card("MIN", "ti-bolt", filtered_data$min_3, "MW", input$name)
-  #           )
-  #         )
-  #     )
-  #   )
-  #   
-  #   # Return the list of cards
-  #   tagList(cards)
-  # })
   
 }
 
