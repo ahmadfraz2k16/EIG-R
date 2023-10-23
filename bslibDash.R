@@ -15,8 +15,7 @@ mw_file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/mw_new.csv
 file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/max_min_avg.csv"
 peakhours_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/peakhours.csv"  # Update with the correct path
 
-# Read the CSV files
-mw_data <- read.csv(mw_file_path)
+
 # Read the CSV files
 mw_data <- read.csv(mw_file_path)
 data <- read.csv(file_path)
@@ -25,7 +24,7 @@ peakhours_data <- read.csv(peakhours_path)
 # Convert the "Time" column to POSIXct format
 data$Time <- as.POSIXct(data$Time, format = "%Y-%m-%d")
 peakhours_data$Time <- as.POSIXct(peakhours_data$Time, format = "%m/%d/%Y %H:%M")
-mw_data$Time <- as.POSIXct(mw_data$Time, format = "%Y-%m-%d %H:%M")
+mw_data$Time <- as.POSIXct(mw_data$Time, format = "%Y-%m-%d %H:%M", tz = "UTC")
 
 # Initialize an empty global_df dataframe
 global_df <- data.frame(Time = as.POSIXct(character()), Name = character(), Energy = numeric())
