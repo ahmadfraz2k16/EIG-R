@@ -9,16 +9,16 @@ int <- function(x) {
 file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/max_min_avg.csv"
 
 # Read the CSV file
-data <- read.csv(file_path)
+data_min_max_avg <- read.csv(file_path)
 
 ## Convert the "Time" column to Date format
-# data$Time <- as.Date(data$Time, format = "%Y-%m-%d")
+# data_min_max_avg$Time <- as.Date(data_min_max_avg$Time, format = "%Y-%m-%d")
 # Convert the Time column to Date format using as.POSIXct
-data$Time <- as.POSIXct(data$Time, format = "%Y-%m-%d")
+data_min_max_avg$Time <- as.POSIXct(data_min_max_avg$Time, format = "%Y-%m-%d")
 
-# Check the structure of the data again to confirm the change
-str(data)
-uniqueDates <- unique(data$Time)
+# Check the structure of the data_min_max_avg again to confirm the change
+str(data_min_max_avg)
+uniqueDates <- unique(data_min_max_avg$Time)
 # Define UI
 ui <- fluidPage(
   titlePanel("Date and Name Filter"),
@@ -41,13 +41,15 @@ ui <- fluidPage(
 # Define server
 server <- function(input, output, session) {
   observeEvent(input$date, {
-    names_for_selected_date <- data$name[data$Time == input$date]
+    names_for_selected_date <- data_min_max_avg$name[data_min_max_avg$Time == input$date]
     updateSelectInput(session, "name", choices = names_for_selected_date)
   })
   
   output$valueBoxes <- renderUI({
-    selected_date <- as.Date(input$date)
-    filtered_data <- data[as.Date(data$Time) == selected_date & data$name == input$name, ]
+    # Subset the data_min_max_avg by the selected date and name
+    filtered_data <- data_min_max_avg[data_min_max_avg$Time == input$date & data_min_max_avg$name == input$name, ]
+    # Convert the "Time" column to a character with the desired format
+    filtered_data$Time <- format(filtered_data$Time, format = "%Y-%m-%d")
     
     # Define value boxes
     value_boxes <- list(
