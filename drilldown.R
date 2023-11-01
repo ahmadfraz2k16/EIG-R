@@ -1,73 +1,76 @@
 # Load the highcharter package
 library(highcharter)
-# # Create sample data
-# data <- data.frame(
-#   category = c("A", "B", "C", "D"),
-#   value1 = c(10, 15, 8, 12),
-#   value2 = c(5, 10, 6, 8),
-#   value3 = c(3, 7, 4, 6)
-# )
-# 
-# # Create the stacked bar column chart
-# highchart() %>%
-#   hc_chart(type = "column") %>%
-#   hc_title(text = "Stacked Bar Column Chart") %>%
-#   hc_xAxis(categories = data$category) %>%
-#   hc_yAxis(title = list(text = "Value")) %>%
-#   hc_plotOptions(column = list(
-#     stacking = "normal",
-#     dataLabels = list(enabled = TRUE)
-#   )) %>%
-#   hc_add_series(name = "Value 1", data = data$value1) %>%
-#   hc_add_series(name = "Value 2", data = data$value2) %>%
-#   hc_add_series(name = "Value 3", data = data$value3)
+library(jsonlite)
+library(shiny)
+library(plumber)
 
-hc <- highchart() %>%
-  hc_chart(
-    type = "column",
-    events = list(
-      drilldown = JS("function(e) {
-    var chart = this,
-    Hydro = {
-      'Private': {
-        'name': 'Private',
-        'color': 'red',
-        'data': [
-          [
-            '00:00',
-            125
-          ],
-          [
-            '01:00',
-            135
-          ],
-          [
-            '02:00',
-            133
-          ]
-        ]
-      },
-      'Public': {
-        'name': 'Public',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            1059
-          ],
-          [
-            '01:00',
-            1111
-          ],
-          [
-            '02:00',
-            1071
-          ]
-        ]
-      }
-    },
-    
-    Renewables = {
+# #* Get JSON data from a file
+# #* @get /api/data
+# function() {
+#   # Load data from a JSON file (modify the file path accordingly)
+#   data <- jsonlite::fromJSON("drilldownJSONdata.json")
+#   
+#   # Return the data as JSON
+#   return(data)
+# }
+
+# Read the JSON file line by line
+jsondata <- readLines("drilldownJSONdata.json")
+# Paste the lines together as a string
+jsondata <- paste(jsondata, collapse = "")
+# Print the string
+print(jsondata)
+
+# jsondata <- jsonlite::fromJSON("drilldownJSONdata.json")
+# print(jsondata)
+# jsondata <- read_json("drilldownJSONdata.json")
+# print(toJSON(jsondata, pretty = TRUE))
+
+# Sample R data frames
+privateData <- data.frame(
+  name = "Private",
+  color = "red",
+  data = list(
+    list("00:00", 125),
+    list("01:00", 135),
+    list("02:00", 133)
+  )
+)
+
+publicData <- data.frame(
+  name = "Public",
+  color = "blue",
+  data = list(
+    list("00:00", 1059),
+    list("01:00", 1111),
+    list("02:00", 1071)
+  )
+)
+date_check <- "2022-03-02"
+# Convert R data frames to JSON
+privateDataJSON <- toJSON(privateData, pretty = TRUE)
+publicDataJSON <- toJSON(publicData, pretty = TRUE)
+desired_hydro_json_output <- '{
+  "Private": {
+    "name": "Private",
+    "color": "red",
+    "data": [
+      ["00:00", 125],
+      ["01:00", 135],
+      ["02:00", 133]
+    ]
+  },
+  "Public": {
+    "name": "Public",
+    "color": "blue",
+    "data": [
+      ["00:00", 1059],
+      ["01:00", 1111],
+      ["02:00", 1071]
+    ]
+  }
+}'
+desired_renewable_json_output <-  "{
       'Solar': {
         'name': 'Solar',
         'color': 'yellow',
@@ -122,7 +125,37 @@ hc <- highchart() %>%
           ]
         ]
       }
-    },
+    }"
+# # Create sample data
+# data <- data.frame(
+#   category = c("A", "B", "C", "D"),
+#   value1 = c(10, 15, 8, 12),
+#   value2 = c(5, 10, 6, 8),
+#   value3 = c(3, 7, 4, 6)
+# )
+# 
+# # Create the stacked bar column chart
+# highchart() %>%
+#   hc_chart(type = "column") %>%
+#   hc_title(text = "Stacked Bar Column Chart") %>%
+#   hc_xAxis(categories = data$category) %>%
+#   hc_yAxis(title = list(text = "Value")) %>%
+#   hc_plotOptions(column = list(
+#     stacking = "normal",
+#     dataLabels = list(enabled = TRUE)
+#   )) %>%
+#   hc_add_series(name = "Value 1", data = data$value1) %>%
+#   hc_add_series(name = "Value 2", data = data$value2) %>%
+#   hc_add_series(name = "Value 3", data = data$value3)
+
+# Define the JavaScript code
+js_code <- "function(e) {
+    var javascriptArray = %s;
+    var specificDate = javascriptArray[e.point.name];
+    var chart = this,
+    Hydro = specificDate.Hydro,
+
+    Renewables = specificDate.Renewable,
     
     Thermal = {
       
@@ -360,7 +393,19 @@ hc <- highchart() %>%
     
     chart.applyDrilldown();
   }"
-      )
+# Replace %s in the JavaScript code with the actual JSON data
+js_code <- sprintf(js_code, jsondata)
+# js_code <- sprintf(js_code, desired_hydro_json_output, desired_renewable_json_output)
+hc <- highchart() %>%
+  hc_chart(
+    type = "column",
+    events = list(
+      click = JS('function (e) {
+        var pointName = e.point.name;
+        Shiny.onInputChange("pointName", pointName);
+      }')
+      ,
+      drilldown = JS(js_code)
     )
   ) %>%
   hc_title(text = "Drill Downs") %>%
@@ -400,6 +445,7 @@ hc <- highchart() %>%
     )
   )
 hc
+
 # # Your data
 # data <- list(
 #   "2022-03-02" = list(
