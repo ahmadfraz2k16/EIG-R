@@ -4,6 +4,264 @@ library(dplyr)
 library(lubridate)
 library(bslib)
 library(bsicons)
+library(jsonlite)
+
+# Read the JSON file line by line
+jsondata <- readLines("drilldownJSONdata.json")
+# Paste the lines together as a string
+jsondata <- paste(jsondata, collapse = "")
+# Print the string
+print(jsondata)
+
+# Define the JavaScript code
+js_code <- "function(e) {
+    var javascriptArray = %s;
+    var specificDate = javascriptArray[e.point.name];
+    var chart = this,
+    Hydro = specificDate.Hydro,
+
+    Renewables = specificDate.Renewable,
+    
+    Thermal = {
+      
+      'IPPS': {
+        name: 'IPPS',
+        color: 'Brown',
+        data: [
+          {
+            'name': '2022-03-02',
+            'y': 172373,
+            'drilldown': true
+          },
+          {
+            'name': '2022-03-03',
+            'y': 168726,
+            'drilldown': true
+          }
+        ],
+        stack: 'move'
+        
+      },
+      
+      
+      'GENCOS': {
+        
+        name: 'GENCOS',
+        color: 'DarkGrey',
+        data: [
+          {
+            'name': '2022-03-02',
+            'y': 16305,
+            'drilldown': true
+          },
+          {
+            'name': '2022-03-03',
+            'y': 25527,
+            'drilldown': true
+          }
+        ],
+        stack: 'move'
+        
+      }
+      
+    },
+    
+    
+    IPPS = {
+      'Gas': {
+        'name': 'Gas',
+        'color': 'yellow',
+        'data': [
+          [
+            '00:00',
+            1091
+          ],
+          [
+            '01:00',
+            1080
+          ],
+          [
+            '02:00',
+            811
+          ]
+        ]
+      },
+      'Coal': {
+        'name': 'Coal',
+        'color': 'green',
+        'data': [
+          [
+            '00:00',
+            2798
+          ],
+          [
+            '01:00',
+            2605
+          ],
+          [
+            '02:00',
+            2371
+          ]
+        ]
+      },
+      'FO': {
+        'name': 'FO',
+        'color': 'red',
+        'data': [
+          [
+            '00:00',
+            510
+          ],
+          [
+            '01:00',
+            520
+          ],
+          [
+            '02:00',
+            530
+          ]
+        ]
+      },
+      'RLNG': {
+        'name': 'RLNG',
+        'color': 'blue',
+        'data': [
+          [
+            '00:00',
+            2171
+          ],
+          [
+            '01:00',
+            2013
+          ],
+          [
+            '02:00',
+            1894
+          ]
+        ]
+      }
+    },
+    
+    
+    Gencos = {
+      'Gas': {
+        'name': 'Gas',
+        'color': 'yellow',
+        'data': [
+          [
+            '00:00',
+            234
+          ],
+          [
+            '01:00',
+            233
+          ],
+          [
+            '02:00',
+            193
+          ]
+        ]
+      },
+      'Coal': {
+        'name': 'Coal',
+        'color': 'green',
+        'data': [
+          [
+            '00:00',
+            234
+          ],
+          [
+            '01:00',
+            233
+          ],
+          [
+            '02:00',
+            193
+          ]
+        ]
+      },
+      'RLNG': {
+        'name': 'RLNG',
+        'color': 'blue',
+        'data': [
+          [
+            '00:00',
+            234
+          ],
+          [
+            '01:00',
+            233
+          ],
+          [
+            '02:00',
+            193
+          ]
+        ]
+      }
+    },
+    
+    
+    
+    Nuclear = {
+      'Nuclear': {
+        'name': 'Nuclear',
+        'color': 'blue',
+        'data': [
+          [
+            '00:00',
+            2015
+          ],
+          [
+            '01:00',
+            2221
+          ],
+          [
+            '02:00',
+            2221
+          ]
+        ]
+      }
+    }
+    
+    
+    
+    
+    if (e.point.color == 'blue') {
+      chart.addSingleSeriesAsDrilldown(e.point, Hydro.Private);
+      chart.addSingleSeriesAsDrilldown(e.point, Hydro.Public);
+    } else if (e.point.color == 'green') {
+      chart.addSingleSeriesAsDrilldown(e.point, Renewables.Solar);
+      chart.addSingleSeriesAsDrilldown(e.point, Renewables.Wind);
+      chart.addSingleSeriesAsDrilldown(e.point, Renewables.Bagasse);
+      
+    } else if (e.point.color == 'red') {
+      chart.addSingleSeriesAsDrilldown(e.point, Thermal.IPPS);
+      chart.addSingleSeriesAsDrilldown(e.point, Thermal.GENCOS);
+      
+    } else if (e.point.color == 'yellow') {
+      chart.addSingleSeriesAsDrilldown(e.point, Nuclear.Nuclear);
+      
+    }
+    
+    
+    if (e.point.color == 'Brown') {
+      chart.addSingleSeriesAsDrilldown(e.point, IPPS.Gas);
+      chart.addSingleSeriesAsDrilldown(e.point, IPPS.Coal);
+      chart.addSingleSeriesAsDrilldown(e.point, IPPS.RLNG);
+      chart.addSingleSeriesAsDrilldown(e.point, IPPS.FO);
+    } else if (e.point.color == 'DarkGrey') {
+      chart.addSingleSeriesAsDrilldown(e.point, Gencos.Gas);
+      chart.addSingleSeriesAsDrilldown(e.point, Gencos.RLNG);
+      chart.addSingleSeriesAsDrilldown(e.point, Gencos.Coal);
+    }
+    
+    
+    chart.applyDrilldown();
+  }"
+# Replace %s in the JavaScript code with the actual JSON data
+js_code <- sprintf(js_code, jsondata)
+
+
 
 int <- function(x) {
   as.integer(floor(x))
@@ -219,6 +477,19 @@ ui <- fluidPage(page_navbar(
                     width = "150px",
                     !!!value_boxes_major_categories
                   )
+                  
+                )
+              ),
+              card(
+                card_header(
+                  class = "bg-dark",
+                  "Daily & Hourly breakdown"
+                ),
+                # actionButton("calculateButton", "Filter"),
+                fluidRow(
+                  
+                  highchartOutput("drilldown_Chart"),
+                  
                   
                 )
               ),
@@ -760,6 +1031,131 @@ server <- function(input, output, session) {
     )
     
     tagList(value_boxes)
+  })
+  # drilldown chart
+  output$drilldown_Chart <- renderHighchart({
+    
+    # js_code <- sprintf(js_code, desired_hydro_json_output, desired_renewable_json_output)
+    hc <- highchart() %>%
+      hc_chart(
+        type = "column",
+        events = list(
+          click = JS('function (e) {
+        var pointName = e.point.name;
+        Shiny.onInputChange("pointName", pointName);
+      }')
+          ,
+          drilldown = JS(js_code)
+        )
+      ) %>%
+      hc_title(text = "Drill Downs") %>%
+      hc_xAxis(type = "category") %>%
+      hc_plotOptions(series = list(stacking = "normal")) %>%
+      # hc_yAxis(max = 1000) %>%
+      hc_add_series(
+        name = "Hydro",
+        color = "blue",
+        data = list(
+          list(name = "2022-03-02", y = 30, drilldown = T), 
+          list(name = "2022-03-03", y = 25, drilldown = T),
+          list(name = "2022-03-04", y = 30, drilldown = T),
+          list(name = "2022-03-05", y = 25, drilldown = T),
+          list(name = "2022-03-06", y = 30, drilldown = T), 
+          list(name = "2022-03-07", y = 25, drilldown = T), 
+          list(name = "2022-03-08", y = 25, drilldown = T),
+          list(name = "2022-03-09", y = 30, drilldown = T), 
+          list(name = "2022-03-10", y = 25, drilldown = T), 
+          list(name = "2022-03-11", y = 25, drilldown = T),
+          list(name = "2022-03-12", y = 30, drilldown = T), 
+          list(name = "2022-03-13", y = 25, drilldown = T), 
+          list(name = "2022-03-14", y = 25, drilldown = T),
+          list(name = "2022-03-15", y = 30, drilldown = T), 
+          list(name = "2022-03-16", y = 25, drilldown = T), 
+          list(name = "2022-03-17", y = 25, drilldown = T),
+          list(name = "2022-03-18", y = 30, drilldown = T), 
+          list(name = "2022-03-19", y = 25, drilldown = T), 
+          list(name = "2022-03-20", y = 25, drilldown = T),
+          list(name = "2022-03-21", y = 30, drilldown = T)
+        )
+      ) %>%
+      hc_add_series(
+        name = "Renewable",
+        color = "green",
+        data = list(
+          list(name = "2022-03-02", y = 60, drilldown = T), 
+          list(name = "2022-03-03", y = 65, drilldown = T),
+          list(name = "2022-03-04", y = 30, drilldown = T),
+          list(name = "2022-03-05", y = 25, drilldown = T),
+          list(name = "2022-03-06", y = 30, drilldown = T), 
+          list(name = "2022-03-07", y = 25, drilldown = T), 
+          list(name = "2022-03-08", y = 25, drilldown = T),
+          list(name = "2022-03-09", y = 30, drilldown = T), 
+          list(name = "2022-03-10", y = 25, drilldown = T), 
+          list(name = "2022-03-11", y = 25, drilldown = T),
+          list(name = "2022-03-12", y = 30, drilldown = T), 
+          list(name = "2022-03-13", y = 25, drilldown = T), 
+          list(name = "2022-03-14", y = 25, drilldown = T),
+          list(name = "2022-03-15", y = 30, drilldown = T), 
+          list(name = "2022-03-16", y = 25, drilldown = T), 
+          list(name = "2022-03-17", y = 25, drilldown = T),
+          list(name = "2022-03-18", y = 30, drilldown = T), 
+          list(name = "2022-03-19", y = 25, drilldown = T), 
+          list(name = "2022-03-20", y = 25, drilldown = T),
+          list(name = "2022-03-21", y = 30, drilldown = T)
+        )
+      ) %>%
+      hc_add_series(
+        name = "Nuclear",
+        color = "yellow",
+        data = list(
+          list(name = "2022-03-02", y = 60, drilldown = T), 
+          list(name = "2022-03-03", y = 65, drilldown = T),
+          list(name = "2022-03-04", y = 30, drilldown = T), 
+          list(name = "2022-03-05", y = 25, drilldown = T),
+          list(name = "2022-03-06", y = 30, drilldown = T), 
+          list(name = "2022-03-07", y = 25, drilldown = T), 
+          list(name = "2022-03-08", y = 25, drilldown = T),
+          list(name = "2022-03-09", y = 30, drilldown = T), 
+          list(name = "2022-03-10", y = 25, drilldown = T), 
+          list(name = "2022-03-11", y = 25, drilldown = T),
+          list(name = "2022-03-12", y = 30, drilldown = T), 
+          list(name = "2022-03-13", y = 25, drilldown = T), 
+          list(name = "2022-03-14", y = 25, drilldown = T),
+          list(name = "2022-03-15", y = 30, drilldown = T), 
+          list(name = "2022-03-16", y = 25, drilldown = T), 
+          list(name = "2022-03-17", y = 25, drilldown = T),
+          list(name = "2022-03-18", y = 30, drilldown = T), 
+          list(name = "2022-03-19", y = 25, drilldown = T), 
+          list(name = "2022-03-20", y = 25, drilldown = T),
+          list(name = "2022-03-21", y = 30, drilldown = T)
+        )
+      ) %>%
+      hc_add_series(
+        name = "Thermal",
+        color = "red",
+        data = list(
+          list(name = "2022-03-02", y = 60, drilldown = T), 
+          list(name = "2022-03-03", y = 65, drilldown = T),
+          list(name = "2022-03-04", y = 30, drilldown = T),
+          list(name = "2022-03-05", y = 25, drilldown = T),
+          list(name = "2022-03-06", y = 30, drilldown = T), 
+          list(name = "2022-03-07", y = 25, drilldown = T), 
+          list(name = "2022-03-08", y = 25, drilldown = T),
+          list(name = "2022-03-09", y = 30, drilldown = T), 
+          list(name = "2022-03-10", y = 25, drilldown = T), 
+          list(name = "2022-03-11", y = 25, drilldown = T),
+          list(name = "2022-03-12", y = 30, drilldown = T), 
+          list(name = "2022-03-13", y = 25, drilldown = T), 
+          list(name = "2022-03-14", y = 25, drilldown = T),
+          list(name = "2022-03-15", y = 30, drilldown = T), 
+          list(name = "2022-03-16", y = 25, drilldown = T), 
+          list(name = "2022-03-17", y = 25, drilldown = T),
+          list(name = "2022-03-18", y = 30, drilldown = T), 
+          list(name = "2022-03-19", y = 25, drilldown = T), 
+          list(name = "2022-03-20", y = 25, drilldown = T),
+          list(name = "2022-03-21", y = 30, drilldown = T)
+        )
+      )
   })
 }
 
