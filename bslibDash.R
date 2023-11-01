@@ -31,6 +31,8 @@ global_df <- data.frame(Time = as.POSIXct(character()), Name = character(), Ener
 # Determine the minimum and maximum dates in the CSV mw_data
 min_date <- min(as.Date(mw_data$Time))
 max_date <- max(as.Date(mw_data$Time))
+# Get the last date
+last_date <- max_date
 # # Filter the mw_data initially with the default date range
 # default_filtered_data <- mw_data %>%
 #   filter(as.Date(Time) >= min_date, as.Date(Time) <= max_date)
@@ -83,7 +85,57 @@ vbs <- list(
   )
 )
 
-
+value_boxes_lasthour <- list(
+  value_box(
+    title = "Hydro",
+    value = textOutput("totalHydroEnergylasthour"),
+    showcase = bs_icon("water"),
+    p(textOutput("totalPublicHydroEnergylasthour")),
+    p(textOutput("totalPrivateHydroEnergylasthour"))
+  ),
+  value_box(
+    title = "Renewable",
+    value = textOutput("totalRenewableEnergylasthour"),
+    showcase = bs_icon("recycle"),
+    p(textOutput("totalSolarEnergylasthour")),
+    p(textOutput("totalWindEnergylasthour")),
+    p(textOutput("totalBagasseEnergylasthour"))
+  ),
+  value_box(
+    title = "Nuclear",
+    value = textOutput("totalNuclearEnergylasthour"),
+    showcase = bs_icon("radioactive"),
+  ),
+  value_box(
+    title = "Thermal",
+    value = textOutput("totalThermalEnergylasthour"),
+    showcase = bs_icon("fire"),
+    fluidRow(
+      column(6, actionButton(
+        "btn_pop", 
+        textOutput("totalIppsThermalEnergylasthour")
+      ) |>
+        popover(
+          title = "Ipps",
+          textOutput("totalIppsCoalThermalEnergylasthour"),
+          textOutput("totalIppsFoThermalEnergylasthour"),
+          textOutput("totalIppsRlngThermalEnergylasthour"),
+          textOutput("totalIppsGasThermalEnergylasthour"),
+        )),
+      column(6, actionButton(
+        "btn_pop", 
+        textOutput("totalGencosThermalEnergylasthour")
+      ) |>
+        popover(
+          title = "Genocs",
+          textOutput("totalGencosCoalThermalEnergylasthour"),
+          textOutput("totalGencosGasThermalEnergylasthour"),
+          textOutput("totalGencosRlngThermalEnergylasthour"),
+        ))
+    )
+  )
+  
+)
 
 value_boxes_major_categories <- list(
   value_box(
@@ -140,7 +192,21 @@ value_boxes_major_categories <- list(
 ui <- fluidPage(page_navbar(
   # navset_card_tab(
     # sidebar = sidebar("sidebar"),
-    nav_panel("MW", 
+    nav_panel("MW",
+              card(
+                card_header(
+                  class = "bg-dark",
+                  paste("Last File Date:", as.character(last_date))
+                ),
+                selectInput("timeRangelasthour", "Select Time Range", choices = NULL, selected = "23:00"),  # We set initial choices to NULL
+                fluidRow(
+                  layout_column_wrap(
+                    width = "150px",
+                    !!!value_boxes_lasthour
+                  )
+                  
+                )
+              ),
               card(
                 card_header(
                   class = "bg-dark",
@@ -199,7 +265,142 @@ ui <- fluidPage(page_navbar(
 ))
 
 server <- function(input, output, session) {
+  # last hour first section starts
+  # Determine the unique times for the last date
+  last_date_times <- unique(format(subset(mw_data, as.Date(Time) == last_date)$Time, "%H:%M"))
   
+  # Set the choices for the selectInput
+  updateSelectInput(session, "timeRangelasthour", choices = last_date_times, selected = "23:00")
+  
+  # Define a reactive expression to filter data based on the time range selected
+  filtered_datalasthour <- reactive({
+    # Filter for the selected time range and the last date
+    filtered_data <- mw_data %>%
+      filter(format(Time, "%H:%M") == input$timeRangelasthour, as.Date(Time) == last_date)
+    return(filtered_data)
+  })
+  
+  observe({
+    filtered_data_val <- filtered_datalasthour()
+    
+    total_Public_hydro_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "HYDEL") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_Private_hydro_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "IPPS HYDEL HYDEL") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_hydro_energylasthour <- sum(total_Public_hydro_energylasthour$total_energylasthour, total_Private_hydro_energylasthour$total_energylasthour)
+    
+    total_solar_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "SOLAR") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    total_wind_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "WIND") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    total_bagasse_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "IPPS BAGASSE BAGASSE") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    total_renewable_energylasthour <- sum(total_solar_energylasthour$total_energylasthour, total_wind_energylasthour$total_energylasthour, total_bagasse_energylasthour$total_energylasthour)
+    
+    total_nuclear_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "NUCLEAR") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_ipps_coal_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "IPPS FOSSIL FUEL Coal") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_ipps_rlng_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "IPPS FOSSIL FUEL RLNG") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_ipps_fo_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "IPPS FOSSIL FUEL FO") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_ipps_gas_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "IPPS FOSSIL FUEL Gas") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_ipps_thermal_energylasthour <- sum(total_ipps_coal_thermal_energylasthour$total_energylasthour, total_ipps_rlng_thermal_energylasthour$total_energylasthour, total_ipps_fo_thermal_energylasthour$total_energylasthour, total_ipps_gas_thermal_energylasthour$total_energylasthour)
+    
+    total_gencos_gas_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "GENCOS Gas") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_gencos_rlng_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "GENCOS RLNG") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_gencos_coal_thermal_energylasthour <- filtered_data_val %>%
+      filter(sub_categories_by_fuel == "GENCOS Coal") %>%
+      summarise(total_energylasthour = sum(Energy_MWh))
+    
+    total_gencos_thermal_energylasthour <- sum(total_gencos_gas_thermal_energylasthour$total_energylasthour, total_gencos_rlng_thermal_energylasthour$total_energylasthour, total_gencos_coal_thermal_energylasthour$total_energylasthour)
+    
+    total_thermal_energylasthour <- total_ipps_thermal_energylasthour + total_gencos_thermal_energylasthour
+    
+    output$totalPublicHydroEnergylasthour <- renderText({
+      paste(total_Public_hydro_energylasthour$total_energylasthour, "Public")
+    })
+    output$totalPrivateHydroEnergylasthour <- renderText({
+      paste(total_Private_hydro_energylasthour$total_energylasthour, "Private")
+    })
+    output$totalHydroEnergylasthour <- renderText({
+      paste(total_hydro_energylasthour, "MWh")
+    })
+    
+    output$totalSolarEnergylasthour <- renderText({
+      paste(total_solar_energylasthour$total_energylasthour, "Solar")
+    })
+    output$totalWindEnergylasthour <- renderText({
+      paste(total_wind_energylasthour$total_energylasthour, "Wind")
+    })
+    output$totalBagasseEnergylasthour <- renderText({
+      paste(total_bagasse_energylasthour$total_energylasthour, "Bagasse")
+    })
+    output$totalRenewableEnergylasthour <- renderText({
+      paste(total_renewable_energylasthour, "MWh")
+    })
+    
+    output$totalNuclearEnergylasthour <- renderText({
+      paste(total_nuclear_energylasthour$total_energylasthour, "MWh")
+    })
+    
+    output$totalIppsGasThermalEnergylasthour <- renderText({
+      paste(int(total_ipps_gas_thermal_energylasthour$total_energylasthour), "Gas")
+    })
+    output$totalIppsCoalThermalEnergylasthour <- renderText({
+      paste(int(total_ipps_coal_thermal_energylasthour$total_energylasthour), "Coal")
+    })
+    output$totalIppsFoThermalEnergylasthour <- renderText({
+      paste(int(total_ipps_fo_thermal_energylasthour$total_energylasthour), "Fo")
+    })
+    output$totalIppsRlngThermalEnergylasthour <- renderText({
+      paste(int(total_ipps_rlng_thermal_energylasthour$total_energylasthour), "Rlng")
+    })
+    output$totalIppsThermalEnergylasthour <- renderText({
+      paste(int(total_ipps_thermal_energylasthour), "Ipps")
+    })
+    output$totalGencosGasThermalEnergylasthour <- renderText({
+      paste(int(total_gencos_gas_thermal_energylasthour$total_energylasthour), "Gas")
+    })
+    output$totalGencosCoalThermalEnergylasthour <- renderText({
+      paste(int(total_gencos_coal_thermal_energylasthour$total_energylasthour), "Coal")
+    })
+    output$totalGencosRlngThermalEnergylasthour <- renderText({
+      paste(int(total_gencos_rlng_thermal_energylasthour$total_energylasthour), "Rlng")
+    })
+    output$totalGencosThermalEnergylasthour <- renderText({
+      paste(int(total_gencos_thermal_energylasthour), "Gencos")
+    })
+    output$totalThermalEnergylasthour <- renderText({
+      paste(int(total_thermal_energylasthour), "MWh")
+    })
+  })
+  # last hour first section ends
   observe({
     start_date <- input$dateRange[1]
     end_date <- input$dateRange[2]
