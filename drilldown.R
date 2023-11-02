@@ -151,212 +151,61 @@ desired_renewable_json_output <-  "{
 # Define the JavaScript code
 js_code <- "function(e) {
     var javascriptArray = %s;
+    var dataParentLayerIPPS = javascriptArray.DataForParentOne.DataParentLayerIPPS;
+    var dataParentLayerGENCOS = javascriptArray.DataForParentOne.DataParentLayerGENCOS;
+    var desiredOutputIPPS = [];
+    var desiredOutputGENCOS = [];
+// Loop through the data and push each entry to the desired output array
+    for (var date in dataParentLayerGENCOS) {
+        if (dataParentLayerGENCOS.hasOwnProperty(date)) {
+            desiredOutputGENCOS.push(dataParentLayerGENCOS[date]);
+        }
+    }
+    // Loop through the data and push each entry to the desired output array
+    for (var date in dataParentLayerIPPS) {
+        if (dataParentLayerIPPS.hasOwnProperty(date)) {
+            desiredOutputIPPS.push(dataParentLayerIPPS[date]);
+        }
+    }
     var specificDate = javascriptArray[e.point.name];
     var chart = this,
     Hydro = specificDate.Hydro,
 
     Renewables = specificDate.Renewable,
     
+   
+
     Thermal = {
-      
-      'IPPS': {
-        name: 'IPPS',
-        color: 'Brown',
-        data: [
-          {
-            'name': '2022-03-02',
-            'y': 172373,
-            'drilldown': true
-          },
-          {
-            'name': '2022-03-03',
-            'y': 168726,
-            'drilldown': true
-          }
-        ],
-        stack: 'move'
-        
-      },
-      
-      
-      'GENCOS': {
-        
-        name: 'GENCOS',
-        color: 'DarkGrey',
-        data: [
-          {
-            'name': '2022-03-02',
-            'y': 16305,
-            'drilldown': true
-          },
-          {
-            'name': '2022-03-03',
-            'y': 25527,
-            'drilldown': true
-          }
-        ],
-        stack: 'move'
-        
-      }
-      
+
+        'IPPS': {
+            name: 'IPPS',
+            color: 'Brown',
+            data: desiredOutputIPPS,
+            stack: 'move'
+
+        },
+
+
+        'GENCOS': {
+
+            name: 'GENCOS',
+            color: 'DarkGrey',
+            data: desiredOutputGENCOS,
+            stack: 'move'
+
+        }
+
     },
-    
-    
-    IPPS = {
-      'Gas': {
-        'name': 'Gas',
-        'color': 'yellow',
-        'data': [
-          [
-            '00:00',
-            1091
-          ],
-          [
-            '01:00',
-            1080
-          ],
-          [
-            '02:00',
-            811
-          ]
-        ]
-      },
-      'Coal': {
-        'name': 'Coal',
-        'color': 'green',
-        'data': [
-          [
-            '00:00',
-            2798
-          ],
-          [
-            '01:00',
-            2605
-          ],
-          [
-            '02:00',
-            2371
-          ]
-        ]
-      },
-      'FO': {
-        'name': 'FO',
-        'color': 'red',
-        'data': [
-          [
-            '00:00',
-            510
-          ],
-          [
-            '01:00',
-            520
-          ],
-          [
-            '02:00',
-            530
-          ]
-        ]
-      },
-      'RLNG': {
-        'name': 'RLNG',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            2171
-          ],
-          [
-            '01:00',
-            2013
-          ],
-          [
-            '02:00',
-            1894
-          ]
-        ]
-      }
-    },
-    
-    
-    Gencos = {
-      'Gas': {
-        'name': 'Gas',
-        'color': 'yellow',
-        'data': [
-          [
-            '00:00',
-            234
-          ],
-          [
-            '01:00',
-            233
-          ],
-          [
-            '02:00',
-            193
-          ]
-        ]
-      },
-      'Coal': {
-        'name': 'Coal',
-        'color': 'green',
-        'data': [
-          [
-            '00:00',
-            234
-          ],
-          [
-            '01:00',
-            233
-          ],
-          [
-            '02:00',
-            193
-          ]
-        ]
-      },
-      'RLNG': {
-        'name': 'RLNG',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            234
-          ],
-          [
-            '01:00',
-            233
-          ],
-          [
-            '02:00',
-            193
-          ]
-        ]
-      }
-    },
-    
-    
-    
-    Nuclear = {
-      'Nuclear': {
-        'name': 'Nuclear',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            2015
-          ],
-          [
-            '01:00',
-            2221
-          ],
-          [
-            '02:00',
-            2221
-          ]
-        ]
-      }
-    }
+
+
+    IPPS = specificDate.IPPS,
+
+
+    Gencos = specificDate.GENCOS,
+
+
+
+    Nuclear = specificDate.Nuclear
     
     
     
@@ -417,7 +266,25 @@ hc <- highchart() %>%
     color = "blue",
     data = list(
       list(name = "2022-03-02", y = 30, drilldown = T), 
-      list(name = "2022-03-03", y = 25, drilldown = T)
+      list(name = "2022-03-03", y = 25, drilldown = T),
+      list(name = "2022-03-04", y = 30, drilldown = T),
+      list(name = "2022-03-05", y = 25, drilldown = T),
+      list(name = "2022-03-06", y = 30, drilldown = T), 
+      list(name = "2022-03-07", y = 25, drilldown = T), 
+      list(name = "2022-03-08", y = 25, drilldown = T),
+      list(name = "2022-03-09", y = 30, drilldown = T), 
+      list(name = "2022-03-10", y = 25, drilldown = T), 
+      list(name = "2022-03-11", y = 25, drilldown = T),
+      list(name = "2022-03-12", y = 30, drilldown = T), 
+      list(name = "2022-03-13", y = 25, drilldown = T), 
+      list(name = "2022-03-14", y = 25, drilldown = T),
+      list(name = "2022-03-15", y = 30, drilldown = T), 
+      list(name = "2022-03-16", y = 25, drilldown = T), 
+      list(name = "2022-03-17", y = 25, drilldown = T),
+      list(name = "2022-03-18", y = 30, drilldown = T), 
+      list(name = "2022-03-19", y = 25, drilldown = T), 
+      list(name = "2022-03-20", y = 25, drilldown = T),
+      list(name = "2022-03-21", y = 30, drilldown = T)
     )
   ) %>%
   hc_add_series(
@@ -425,7 +292,25 @@ hc <- highchart() %>%
     color = "green",
     data = list(
       list(name = "2022-03-02", y = 60, drilldown = T), 
-      list(name = "2022-03-03", y = 65, drilldown = T)
+      list(name = "2022-03-03", y = 65, drilldown = T),
+      list(name = "2022-03-04", y = 30, drilldown = T),
+      list(name = "2022-03-05", y = 25, drilldown = T),
+      list(name = "2022-03-06", y = 30, drilldown = T), 
+      list(name = "2022-03-07", y = 25, drilldown = T), 
+      list(name = "2022-03-08", y = 25, drilldown = T),
+      list(name = "2022-03-09", y = 30, drilldown = T), 
+      list(name = "2022-03-10", y = 25, drilldown = T), 
+      list(name = "2022-03-11", y = 25, drilldown = T),
+      list(name = "2022-03-12", y = 30, drilldown = T), 
+      list(name = "2022-03-13", y = 25, drilldown = T), 
+      list(name = "2022-03-14", y = 25, drilldown = T),
+      list(name = "2022-03-15", y = 30, drilldown = T), 
+      list(name = "2022-03-16", y = 25, drilldown = T), 
+      list(name = "2022-03-17", y = 25, drilldown = T),
+      list(name = "2022-03-18", y = 30, drilldown = T), 
+      list(name = "2022-03-19", y = 25, drilldown = T), 
+      list(name = "2022-03-20", y = 25, drilldown = T),
+      list(name = "2022-03-21", y = 30, drilldown = T)
     )
   ) %>%
   hc_add_series(
@@ -433,7 +318,25 @@ hc <- highchart() %>%
     color = "yellow",
     data = list(
       list(name = "2022-03-02", y = 60, drilldown = T), 
-      list(name = "2022-03-03", y = 65, drilldown = T)
+      list(name = "2022-03-03", y = 65, drilldown = T),
+      list(name = "2022-03-04", y = 30, drilldown = T), 
+      list(name = "2022-03-05", y = 25, drilldown = T),
+      list(name = "2022-03-06", y = 30, drilldown = T), 
+      list(name = "2022-03-07", y = 25, drilldown = T), 
+      list(name = "2022-03-08", y = 25, drilldown = T),
+      list(name = "2022-03-09", y = 30, drilldown = T), 
+      list(name = "2022-03-10", y = 25, drilldown = T), 
+      list(name = "2022-03-11", y = 25, drilldown = T),
+      list(name = "2022-03-12", y = 30, drilldown = T), 
+      list(name = "2022-03-13", y = 25, drilldown = T), 
+      list(name = "2022-03-14", y = 25, drilldown = T),
+      list(name = "2022-03-15", y = 30, drilldown = T), 
+      list(name = "2022-03-16", y = 25, drilldown = T), 
+      list(name = "2022-03-17", y = 25, drilldown = T),
+      list(name = "2022-03-18", y = 30, drilldown = T), 
+      list(name = "2022-03-19", y = 25, drilldown = T), 
+      list(name = "2022-03-20", y = 25, drilldown = T),
+      list(name = "2022-03-21", y = 30, drilldown = T)
     )
   ) %>%
   hc_add_series(
@@ -441,7 +344,25 @@ hc <- highchart() %>%
     color = "red",
     data = list(
       list(name = "2022-03-02", y = 60, drilldown = T), 
-      list(name = "2022-03-03", y = 65, drilldown = T)
+      list(name = "2022-03-03", y = 65, drilldown = T),
+      list(name = "2022-03-04", y = 30, drilldown = T),
+      list(name = "2022-03-05", y = 25, drilldown = T),
+      list(name = "2022-03-06", y = 30, drilldown = T), 
+      list(name = "2022-03-07", y = 25, drilldown = T), 
+      list(name = "2022-03-08", y = 25, drilldown = T),
+      list(name = "2022-03-09", y = 30, drilldown = T), 
+      list(name = "2022-03-10", y = 25, drilldown = T), 
+      list(name = "2022-03-11", y = 25, drilldown = T),
+      list(name = "2022-03-12", y = 30, drilldown = T), 
+      list(name = "2022-03-13", y = 25, drilldown = T), 
+      list(name = "2022-03-14", y = 25, drilldown = T),
+      list(name = "2022-03-15", y = 30, drilldown = T), 
+      list(name = "2022-03-16", y = 25, drilldown = T), 
+      list(name = "2022-03-17", y = 25, drilldown = T),
+      list(name = "2022-03-18", y = 30, drilldown = T), 
+      list(name = "2022-03-19", y = 25, drilldown = T), 
+      list(name = "2022-03-20", y = 25, drilldown = T),
+      list(name = "2022-03-21", y = 30, drilldown = T)
     )
   )
 hc
