@@ -10,218 +10,140 @@ library(jsonlite)
 jsondata <- readLines("drilldownJSONdata.json")
 # Paste the lines together as a string
 jsondata <- paste(jsondata, collapse = "")
-# Print the string
-print(jsondata)
+# Parse the JSON data
+json_data <- jsonlite::fromJSON(jsondata)
+
+# Extract data for Hydro
+dataParentLayerHydro <- json_data$DataForParentOne$DataParentLayerHydro
+
+# Initialize an empty list for the desired output
+desiredOutputHydro <- list()
+
+# Loop through the data and format it into the desired structure
+for (entry in dataParentLayerHydro) {
+  desiredOutputHydro <- c(
+    desiredOutputHydro,
+    list(
+      list(name = entry$name, y = entry$y, drilldown = entry$drilldown)
+    )
+  )
+}
+
+# Print the desired output
+print(desiredOutputHydro)
+# Extract data for Renewable
+dataParentLayerRenewable <- json_data$DataForParentOne$DataParentLayerRenewable
+
+# Initialize an empty list for the desired output
+desiredOutputRenewable <- list()
+
+# Loop through the data and format it into the desired structure
+for (entry in dataParentLayerRenewable) {
+  desiredOutputRenewable <- c(
+    desiredOutputRenewable,
+    list(
+      list(name = entry$name, y = entry$y, drilldown = entry$drilldown)
+    )
+  )
+}
+
+# Print the desired output for Renewable
+print(desiredOutputRenewable)
+# Extract data for Nuclear
+dataParentLayerNuclear <- json_data$DataForParentOne$DataParentLayerNuclear
+
+# Initialize an empty list for the desired output
+desiredOutputNuclear <- list()
+
+# Loop through the data and format it into the desired structure
+for (entry in dataParentLayerNuclear) {
+  desiredOutputNuclear <- c(
+    desiredOutputNuclear,
+    list(
+      list(name = entry$name, y = entry$y, drilldown = entry$drilldown)
+    )
+  )
+}
+
+# Print the desired output for Nuclear
+print(desiredOutputNuclear)
+# Extract data for Thermal
+dataParentLayerThermal <- json_data$DataForParentOne$DataParentLayerThermal
+
+# Initialize an empty list for the desired output
+desiredOutputThermal <- list()
+
+# Loop through the data and format it into the desired structure
+for (entry in dataParentLayerThermal) {
+  desiredOutputThermal <- c(
+    desiredOutputThermal,
+    list(
+      list(name = entry$name, y = entry$y, drilldown = entry$drilldown)
+    )
+  )
+}
+
+# Print the desired output for Thermal
+print(desiredOutputThermal)
 
 # Define the JavaScript code
 js_code <- "function(e) {
     var javascriptArray = %s;
+    var dataParentLayerIPPS = javascriptArray.DataForParentOne.DataParentLayerIPPS;
+    var dataParentLayerGENCOS = javascriptArray.DataForParentOne.DataParentLayerGENCOS;
+    var desiredOutputIPPS = [];
+    var desiredOutputGENCOS = [];
+// Loop through the data and push each entry to the desired output array
+    for (var date in dataParentLayerGENCOS) {
+        if (dataParentLayerGENCOS.hasOwnProperty(date)) {
+            desiredOutputGENCOS.push(dataParentLayerGENCOS[date]);
+        }
+    }
+    // Loop through the data and push each entry to the desired output array
+    for (var date in dataParentLayerIPPS) {
+        if (dataParentLayerIPPS.hasOwnProperty(date)) {
+            desiredOutputIPPS.push(dataParentLayerIPPS[date]);
+        }
+    }
     var specificDate = javascriptArray[e.point.name];
     var chart = this,
     Hydro = specificDate.Hydro,
 
     Renewables = specificDate.Renewable,
     
+   
+
     Thermal = {
-      
-      'IPPS': {
-        name: 'IPPS',
-        color: 'Brown',
-        data: [
-          {
-            'name': '2022-03-02',
-            'y': 172373,
-            'drilldown': true
-          },
-          {
-            'name': '2022-03-03',
-            'y': 168726,
-            'drilldown': true
-          }
-        ],
-        stack: 'move'
-        
-      },
-      
-      
-      'GENCOS': {
-        
-        name: 'GENCOS',
-        color: 'DarkGrey',
-        data: [
-          {
-            'name': '2022-03-02',
-            'y': 16305,
-            'drilldown': true
-          },
-          {
-            'name': '2022-03-03',
-            'y': 25527,
-            'drilldown': true
-          }
-        ],
-        stack: 'move'
-        
-      }
-      
+
+        'IPPS': {
+            name: 'IPPS',
+            color: 'Brown',
+            data: desiredOutputIPPS,
+            stack: 'move'
+
+        },
+
+
+        'GENCOS': {
+
+            name: 'GENCOS',
+            color: 'DarkGrey',
+            data: desiredOutputGENCOS,
+            stack: 'move'
+
+        }
+
     },
-    
-    
-    IPPS = {
-      'Gas': {
-        'name': 'Gas',
-        'color': 'yellow',
-        'data': [
-          [
-            '00:00',
-            1091
-          ],
-          [
-            '01:00',
-            1080
-          ],
-          [
-            '02:00',
-            811
-          ]
-        ]
-      },
-      'Coal': {
-        'name': 'Coal',
-        'color': 'green',
-        'data': [
-          [
-            '00:00',
-            2798
-          ],
-          [
-            '01:00',
-            2605
-          ],
-          [
-            '02:00',
-            2371
-          ]
-        ]
-      },
-      'FO': {
-        'name': 'FO',
-        'color': 'red',
-        'data': [
-          [
-            '00:00',
-            510
-          ],
-          [
-            '01:00',
-            520
-          ],
-          [
-            '02:00',
-            530
-          ]
-        ]
-      },
-      'RLNG': {
-        'name': 'RLNG',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            2171
-          ],
-          [
-            '01:00',
-            2013
-          ],
-          [
-            '02:00',
-            1894
-          ]
-        ]
-      }
-    },
-    
-    
-    Gencos = {
-      'Gas': {
-        'name': 'Gas',
-        'color': 'yellow',
-        'data': [
-          [
-            '00:00',
-            234
-          ],
-          [
-            '01:00',
-            233
-          ],
-          [
-            '02:00',
-            193
-          ]
-        ]
-      },
-      'Coal': {
-        'name': 'Coal',
-        'color': 'green',
-        'data': [
-          [
-            '00:00',
-            234
-          ],
-          [
-            '01:00',
-            233
-          ],
-          [
-            '02:00',
-            193
-          ]
-        ]
-      },
-      'RLNG': {
-        'name': 'RLNG',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            234
-          ],
-          [
-            '01:00',
-            233
-          ],
-          [
-            '02:00',
-            193
-          ]
-        ]
-      }
-    },
-    
-    
-    
-    Nuclear = {
-      'Nuclear': {
-        'name': 'Nuclear',
-        'color': 'blue',
-        'data': [
-          [
-            '00:00',
-            2015
-          ],
-          [
-            '01:00',
-            2221
-          ],
-          [
-            '02:00',
-            2221
-          ]
-        ]
-      }
-    }
+
+
+    IPPS = specificDate.IPPS,
+
+
+    Gencos = specificDate.GENCOS,
+
+
+
+    Nuclear = specificDate.Nuclear
     
     
     
@@ -1052,109 +974,26 @@ server <- function(input, output, session) {
       hc_xAxis(type = "category") %>%
       hc_plotOptions(series = list(stacking = "normal")) %>%
       # hc_yAxis(max = 1000) %>%
+      # Populate the y values for each category
       hc_add_series(
         name = "Hydro",
         color = "blue",
-        data = list(
-          list(name = "2022-03-02", y = 30, drilldown = T), 
-          list(name = "2022-03-03", y = 25, drilldown = T),
-          list(name = "2022-03-04", y = 30, drilldown = T),
-          list(name = "2022-03-05", y = 25, drilldown = T),
-          list(name = "2022-03-06", y = 30, drilldown = T), 
-          list(name = "2022-03-07", y = 25, drilldown = T), 
-          list(name = "2022-03-08", y = 25, drilldown = T),
-          list(name = "2022-03-09", y = 30, drilldown = T), 
-          list(name = "2022-03-10", y = 25, drilldown = T), 
-          list(name = "2022-03-11", y = 25, drilldown = T),
-          list(name = "2022-03-12", y = 30, drilldown = T), 
-          list(name = "2022-03-13", y = 25, drilldown = T), 
-          list(name = "2022-03-14", y = 25, drilldown = T),
-          list(name = "2022-03-15", y = 30, drilldown = T), 
-          list(name = "2022-03-16", y = 25, drilldown = T), 
-          list(name = "2022-03-17", y = 25, drilldown = T),
-          list(name = "2022-03-18", y = 30, drilldown = T), 
-          list(name = "2022-03-19", y = 25, drilldown = T), 
-          list(name = "2022-03-20", y = 25, drilldown = T),
-          list(name = "2022-03-21", y = 30, drilldown = T)
-        )
+        data = desiredOutputHydro
       ) %>%
       hc_add_series(
         name = "Renewable",
         color = "green",
-        data = list(
-          list(name = "2022-03-02", y = 60, drilldown = T), 
-          list(name = "2022-03-03", y = 65, drilldown = T),
-          list(name = "2022-03-04", y = 30, drilldown = T),
-          list(name = "2022-03-05", y = 25, drilldown = T),
-          list(name = "2022-03-06", y = 30, drilldown = T), 
-          list(name = "2022-03-07", y = 25, drilldown = T), 
-          list(name = "2022-03-08", y = 25, drilldown = T),
-          list(name = "2022-03-09", y = 30, drilldown = T), 
-          list(name = "2022-03-10", y = 25, drilldown = T), 
-          list(name = "2022-03-11", y = 25, drilldown = T),
-          list(name = "2022-03-12", y = 30, drilldown = T), 
-          list(name = "2022-03-13", y = 25, drilldown = T), 
-          list(name = "2022-03-14", y = 25, drilldown = T),
-          list(name = "2022-03-15", y = 30, drilldown = T), 
-          list(name = "2022-03-16", y = 25, drilldown = T), 
-          list(name = "2022-03-17", y = 25, drilldown = T),
-          list(name = "2022-03-18", y = 30, drilldown = T), 
-          list(name = "2022-03-19", y = 25, drilldown = T), 
-          list(name = "2022-03-20", y = 25, drilldown = T),
-          list(name = "2022-03-21", y = 30, drilldown = T)
-        )
+        data = desiredOutputRenewable
       ) %>%
       hc_add_series(
         name = "Nuclear",
         color = "yellow",
-        data = list(
-          list(name = "2022-03-02", y = 60, drilldown = T), 
-          list(name = "2022-03-03", y = 65, drilldown = T),
-          list(name = "2022-03-04", y = 30, drilldown = T), 
-          list(name = "2022-03-05", y = 25, drilldown = T),
-          list(name = "2022-03-06", y = 30, drilldown = T), 
-          list(name = "2022-03-07", y = 25, drilldown = T), 
-          list(name = "2022-03-08", y = 25, drilldown = T),
-          list(name = "2022-03-09", y = 30, drilldown = T), 
-          list(name = "2022-03-10", y = 25, drilldown = T), 
-          list(name = "2022-03-11", y = 25, drilldown = T),
-          list(name = "2022-03-12", y = 30, drilldown = T), 
-          list(name = "2022-03-13", y = 25, drilldown = T), 
-          list(name = "2022-03-14", y = 25, drilldown = T),
-          list(name = "2022-03-15", y = 30, drilldown = T), 
-          list(name = "2022-03-16", y = 25, drilldown = T), 
-          list(name = "2022-03-17", y = 25, drilldown = T),
-          list(name = "2022-03-18", y = 30, drilldown = T), 
-          list(name = "2022-03-19", y = 25, drilldown = T), 
-          list(name = "2022-03-20", y = 25, drilldown = T),
-          list(name = "2022-03-21", y = 30, drilldown = T)
-        )
+        data = desiredOutputNuclear
       ) %>%
       hc_add_series(
         name = "Thermal",
         color = "red",
-        data = list(
-          list(name = "2022-03-02", y = 60, drilldown = T), 
-          list(name = "2022-03-03", y = 65, drilldown = T),
-          list(name = "2022-03-04", y = 30, drilldown = T),
-          list(name = "2022-03-05", y = 25, drilldown = T),
-          list(name = "2022-03-06", y = 30, drilldown = T), 
-          list(name = "2022-03-07", y = 25, drilldown = T), 
-          list(name = "2022-03-08", y = 25, drilldown = T),
-          list(name = "2022-03-09", y = 30, drilldown = T), 
-          list(name = "2022-03-10", y = 25, drilldown = T), 
-          list(name = "2022-03-11", y = 25, drilldown = T),
-          list(name = "2022-03-12", y = 30, drilldown = T), 
-          list(name = "2022-03-13", y = 25, drilldown = T), 
-          list(name = "2022-03-14", y = 25, drilldown = T),
-          list(name = "2022-03-15", y = 30, drilldown = T), 
-          list(name = "2022-03-16", y = 25, drilldown = T), 
-          list(name = "2022-03-17", y = 25, drilldown = T),
-          list(name = "2022-03-18", y = 30, drilldown = T), 
-          list(name = "2022-03-19", y = 25, drilldown = T), 
-          list(name = "2022-03-20", y = 25, drilldown = T),
-          list(name = "2022-03-21", y = 30, drilldown = T)
-        )
+        data = desiredOutputThermal
       )
   })
 }
