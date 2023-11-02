@@ -422,8 +422,20 @@ ui <- fluidPage(page_navbar(
                 ),
                 # actionButton("calculateButton", "Filter"),
                 fluidRow(
-                  
-                  column(3, selectInput("date", "Select Date", choices = unique(data$Time), selected = unique(data$Time)[1])),
+                  column(
+                    3,
+                    div(
+                      class = "form-group",
+                      dateInput(
+                        inputId = "date",
+                        label = "Select Date",
+                        value = min_date, # Set the default value to the minimum date
+                        min = min_date,   # Set the minimum date
+                        max = max_date    # Set the maximum date
+                      )
+                    )
+                  ),
+                  # column(3, selectInput("date", "Select Date", choices = unique(data$Time), selected = unique(data$Time)[1])),
                   column(4, selectInput("name", "Select Name", choices = NULL)),
                   column(6),
                   uiOutput("cards"),
@@ -441,7 +453,21 @@ ui <- fluidPage(page_navbar(
                   "Min Max Average"
                 ),
                 fluidRow(
-                  column(3, selectInput("date_min_max_avg", "Select Date", choices = uniqueDates, selected = uniqueDates[1])),
+                  column(
+                    3,
+                    div(
+                      class = "form-group",
+                      dateInput(
+                        inputId = "date_min_max_avg",
+                        label = "Select Date",
+                        value = min_date,  # Set the default value to the minimum date
+                        min = min_date,    # Set the minimum date
+                        max = max_date     # Set the maximum date
+                      )
+                    )
+                  ),
+                  
+                  # column(3, selectInput("date_min_max_avg", "Select Date", choices = uniqueDates, selected = uniqueDates[1])),
                   column(4, selectInput("name_min_max_avg", "Select Name", choices = NULL)),
                   column(6),
                   uiOutput("valueBoxes_min_max_avg")
