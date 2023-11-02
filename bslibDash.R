@@ -270,6 +270,7 @@ value_boxes_lasthour <- list(
     title = "Hydro",
     value = textOutput("totalHydroEnergylasthour"),
     showcase = bs_icon("water"),
+    theme_color = "info",
     p(textOutput("totalPublicHydroEnergylasthour")),
     p(textOutput("totalPrivateHydroEnergylasthour"))
   ),
@@ -277,6 +278,7 @@ value_boxes_lasthour <- list(
     title = "Renewable",
     value = textOutput("totalRenewableEnergylasthour"),
     showcase = bs_icon("recycle"),
+    theme_color = "success",
     p(textOutput("totalSolarEnergylasthour")),
     p(textOutput("totalWindEnergylasthour")),
     p(textOutput("totalBagasseEnergylasthour"))
@@ -284,16 +286,19 @@ value_boxes_lasthour <- list(
   value_box(
     title = "Nuclear",
     value = textOutput("totalNuclearEnergylasthour"),
+    theme_color = "danger",
     showcase = bs_icon("radioactive"),
   ),
   value_box(
     title = "Thermal",
     value = textOutput("totalThermalEnergylasthour"),
     showcase = bs_icon("fire"),
+    theme_color = "warning",
     fluidRow(
       column(6, actionButton(
         "btn_pop", 
-        textOutput("totalIppsThermalEnergylasthour")
+        textOutput("totalIppsThermalEnergylasthour"),
+        class = "btn btn-warning text-white"
       ) |>
         popover(
           title = "Ipps",
@@ -304,7 +309,8 @@ value_boxes_lasthour <- list(
         )),
       column(6, actionButton(
         "btn_pop", 
-        textOutput("totalGencosThermalEnergylasthour")
+        textOutput("totalGencosThermalEnergylasthour"),
+        class = "btn btn-warning text-white"
       ) |>
         popover(
           title = "Genocs",
@@ -322,6 +328,7 @@ value_boxes_major_categories <- list(
     title = "Hydro",
     value = textOutput("totalHydroEnergy"),
     showcase = bs_icon("water"),
+    theme_color = "info",
     p(textOutput("totalPublicHydroEnergy")),
     p(textOutput("totalPrivateHydroEnergy"))
   ),
@@ -329,6 +336,7 @@ value_boxes_major_categories <- list(
     title = "Renewable",
     value = textOutput("totalRenewableEnergy"),
     showcase = bs_icon("recycle"),
+    theme_color = "success",
     p(textOutput("totalSolarEnergy")),
     p(textOutput("totalWindEnergy")),
     p(textOutput("totalBagasseEnergy"))
@@ -337,15 +345,18 @@ value_boxes_major_categories <- list(
     title = "Nuclear",
     value = textOutput("totalNuclearEnergy"),
     showcase = bs_icon("radioactive"),
+    theme_color = "danger",
   ),
   value_box(
     title = "Thermal",
     value = textOutput("totalThermalEnergy"),
     showcase = bs_icon("fire"),
+    theme_color = "warning",
     fluidRow(
       column(6, actionButton(
         "btn_pop", 
-        textOutput("totalIppsThermalEnergy")
+        textOutput("totalIppsThermalEnergy"),
+        class = "btn btn-warning text-white"
       ) |>
         popover(
           title = "Ipps",
@@ -356,7 +367,8 @@ value_boxes_major_categories <- list(
         )),
       column(6, actionButton(
         "btn_pop", 
-        textOutput("totalGencosThermalEnergy")
+        textOutput("totalGencosThermalEnergy"),
+        class = "btn btn-warning text-white"
       ) |>
         popover(
           title = "Genocs",
@@ -899,7 +911,7 @@ server <- function(input, output, session) {
             value = filtered_data$max_1,
             subtitle = "MAX",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "info",
             p("MAX")
           )
         ),
@@ -910,7 +922,7 @@ server <- function(input, output, session) {
             value = filtered_data$min_1,
             subtitle = "MIN",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "info",
             p("MIN")
           )
         ),
@@ -921,7 +933,7 @@ server <- function(input, output, session) {
             value = int(filtered_data$average),
             subtitle = "AVERAGE",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "dark",
             p("AVERAGE")
           )
         )
@@ -935,7 +947,7 @@ server <- function(input, output, session) {
             value = filtered_data$max_2,
             subtitle = "MAX",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "warning",
             p("MAX")
           )
         ),
@@ -946,7 +958,7 @@ server <- function(input, output, session) {
             value = filtered_data$min_2,
             subtitle = "MIN",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "warning",
             p("MIN")
           )
         )
@@ -960,7 +972,7 @@ server <- function(input, output, session) {
             value = filtered_data$max_3,
             subtitle = "MAX",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "danger",
             p("MAX")
           )
         ),
@@ -971,7 +983,7 @@ server <- function(input, output, session) {
             value = filtered_data$min_3,
             subtitle = "MIN",
             icon = icon("bolt", lib = "font-awesome"),
-            color = "danger",
+            theme_color = "danger",
             p("MIN")
           )
         )
