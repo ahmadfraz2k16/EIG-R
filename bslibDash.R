@@ -5,6 +5,8 @@ library(lubridate)
 library(bslib)
 library(bsicons)
 library(jsonlite)
+library(DT)
+
 
 # Read the JSON file line by line
 jsondata <- readLines("drilldownJSONdata.json")
@@ -191,21 +193,28 @@ int <- function(x) {
 
 # Load your CSV mw_data
 # Specify the file paths for both datasets
-mw_file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/mw_new.csv"
-file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/max_min_avg.csv"
-peakhours_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/peakhours.csv"  # Update with the correct path
-
+# mw_file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/mw_new.csv"
+# file_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/max_min_avg.csv"
+# peakhours_path <- "C:/xampp/htdocs/latest_Dash/html/iconbar/include/csv/peakhours.csv"  # Update with the correct path
+mw_file_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/collective_data.csv"
+file_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/max_min_avg.csv"
+peakhours_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/peakhours.csv"
 
 # Read the CSV files
 mw_data <- read.csv(mw_file_path)
+mw_data$Time <- ifelse(grepl(" ", mw_data$Time), mw_data$Time, paste(mw_data$Time, "00:00:00"))
+str(mw_data)
+head(mw_data)
 data <- read.csv(file_path)
 peakhours_data <- read.csv(peakhours_path)
 
 # Convert the "Time" column to POSIXct format
 data$Time <- as.POSIXct(data$Time, format = "%Y-%m-%d")
+peakhours_data$Time <- as.POSIXct(peakhours_data$Time, format = "%Y-%m-%d %H:%M")
 peakhours_data$Time <- as.POSIXct(peakhours_data$Time, format = "%m/%d/%Y %H:%M")
 mw_data$Time <- as.POSIXct(mw_data$Time, format = "%Y-%m-%d %H:%M", tz = "UTC")
-
+str(mw_data)
+head(mw_data)
 # Initialize an empty global_df dataframe
 global_df <- data.frame(Time = as.POSIXct(character()), Name = character(), Energy = numeric())
 # Determine the minimum and maximum dates in the CSV mw_data
