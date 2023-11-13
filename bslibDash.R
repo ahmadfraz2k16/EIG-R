@@ -487,10 +487,18 @@ ui <- fluidPage(page_navbar(
                 )
               )
               ),
-    nav_panel("Main", 
-              layout_column_wrap(
-                width = "250px",
-                !!!vbs
+    nav_panel("Download", 
+              titlePanel("Data Filtering and Download"),
+              
+              sidebarLayout(
+                sidebarPanel(
+                  dateRangeInput("date_range", "Select Date Range", start = min(mw_data$Time), end = max(mw_data$Time), min = min(mw_data$Time), max = max(mw_data$Time)),
+                  downloadButton("download_data", "Download Data")
+                ),
+                
+                mainPanel(
+                  DTOutput("filtered_data_table")
+                )
               ))
   # )
 ))
@@ -1034,6 +1042,31 @@ server <- function(input, output, session) {
         data = desiredOutputThermal
       )
   })
+  
+  # Filter data based on date selection
+  filtered_data_download <- reactive({
+    req(input$date_range)
+    # Add one day and subtract one second to the end date
+    end_date <- input$date_range[2] + days(1) - seconds(1)
+    filter(mw_data, between(Time, input$date_range[1], end_date))
+  })
+  
+  
+  # Show filtered data in a paginated DataTable
+  output$filtered_data_table <- renderDT({
+    formatted_data <- mutate(filtered_data_download(), Time = format(Time, "%Y-%m-%d %H:%M:%S"))
+    datatable(formatted_data, options = list(pageLength = 10))  # You can adjust 'pageLength' as needed
+  })
+  
+  # Download filtered data as CSV
+  output$download_data <- downloadHandler(
+    filename = function() {
+      paste("download_filtered_data.csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(filtered_data_download(), file, row.names = FALSE)
+    }
+  )
 }
 
 
