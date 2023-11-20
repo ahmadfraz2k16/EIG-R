@@ -525,22 +525,76 @@ server <- function(input, output) {
   
   
   
+  # output$userAccessCountDateOnly <- renderHighchart({
+  #   data <- filtered_data_date_range_only() %>%
+  #     group_by(Username) %>%
+  #     summarise(Count = n())
+  # 
+  #   highchart() %>%
+  #     hc_title(text = "User Access Count") %>%
+  #     hc_xAxis(categories = data$Username) %>%
+  #     hc_yAxis(title = list(text = "Access Count")) %>%
+  #     hc_add_series(
+  #       data = data,
+  #       type = "bar",
+  #       hcaes(x = Username, y = Count),
+  #       name = "Total Access Count"
+  #     )
+  # })
+  
+  
+#   output$userAccessCountDateOnly <- renderHighchart({
+#   data <- filtered_data_date_range_only() %>%
+#     group_by(Username, Tab) %>%
+#     summarise(Count = n())
+# 
+#   highchart() %>%
+#     hc_title(text = "User Access Count") %>%
+#     hc_xAxis(categories = unique(data$Username)) %>%
+#     hc_yAxis(title = list(text = "Access Count")) %>%
+#     hc_add_series(
+#       data = data,
+#       type = "bar",
+#       hcaes(x = Username, y = Count, group = Tab),
+#       name = "{point.name}"
+#     ) %>%
+#     hc_plotOptions(
+#       bar = list(
+#         stacking = 'normal',
+#         dataLabels = list(enabled = TRUE)
+#       )
+#     ) %>%
+#     hc_legend(align = "right", verticalAlign = "top", layout = "vertical", reversed = TRUE)
+# })
+
   output$userAccessCountDateOnly <- renderHighchart({
     data <- filtered_data_date_range_only() %>%
-      group_by(Username) %>%
+      group_by(Username, Tab) %>%
       summarise(Count = n())
     
     highchart() %>%
       hc_title(text = "User Access Count") %>%
-      hc_xAxis(categories = data$Username) %>%
       hc_yAxis(title = list(text = "Access Count")) %>%
+      hc_xAxis(categories = unique(data$Username)) %>%
       hc_add_series(
         data = data,
         type = "bar",
-        hcaes(x = Username, y = Count),
-        name = "Total Access Count"
-      )
+        hcaes(x = Tab, y = Count, group = Username),
+        name = "{point.name}"
+      ) %>%
+      hc_plotOptions(
+        bar = list(
+          stacking = 'normal',
+          dataLabels = list(enabled = TRUE)
+        )
+      ) %>%
+      hc_legend(align = "right", verticalAlign = "top", layout = "vertical", reversed = TRUE)
   })
+  
+  
+  
+  
+  
   
 }
 
