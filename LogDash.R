@@ -571,24 +571,32 @@ server <- function(input, output) {
     data <- filtered_data_date_range_only() %>%
       group_by(Username, Tab) %>%
       summarise(Count = n())
+    tabs <- unique(data$Tab)
+    # Assuming your data frame is named df
+    print(data, n = nrow(data))
     
+    # Convert Tab to a factor with ordered levels based on Count
+    data$Tab <- factor(data$Tab, levels = unique(data$Tab[order(-data$Count)]))
+    # Assuming your data frame is named df
+    # # Create a sample data frame
+    # data <- data.frame(
+    #   Username = c("fda", "fda", "fda", "Hassam", "PDA", "admin", "ahmad", "ahmad", "ahmad", "ahmad", "ahmad", "ahmad", "ahmadusman", "ahmadusman", "ahmadusman", "ahmadusman", "ahmadusman"),
+    #   Tab = c("Electricity_bill_tab", "historical_tab", "live_update_tab", "summary_tab", "summary_tab", "summary_tab", "Electricity_bill_tab", "comparative_tab", "historical_tab", "live_update_tab", "solar_estimator_tab", "summary_tab", "Electricity_bill_tab", "historical_tab", "live_update_tab", "solar_estimator_tab", "summary_tab"),
+    #   Count = c(1, 1, 1, 1, 1, 1, 6, 5, 29, 34, 1, 60, 36, 12, 19, 9, 82)
+    # )
+    
+    # Reshape the data frame into a wide format
+    data_wide <- reshape2::dcast(data, Username ~ Tab, value.var = "Count")
+    
+    # Plot a stacked column bar chart
     highchart() %>%
-      hc_title(text = "User Access Count") %>%
-      hc_yAxis(title = list(text = "Access Count")) %>%
-      hc_xAxis(categories = unique(data$Username)) %>%
-      hc_add_series(
-        data = data,
-        type = "bar",
-        hcaes(x = Tab, y = Count, group = Username),
-        name = "{point.name}"
-      ) %>%
-      hc_plotOptions(
-        bar = list(
-          stacking = 'normal',
-          dataLabels = list(enabled = TRUE)
-        )
-      ) %>%
-      hc_legend(align = "right", verticalAlign = "top", layout = "vertical", reversed = TRUE)
+      hc_xAxis(categories = data_wide$Username) %>%
+      hc_add_series(name = "Electricity_bill_tab", type = "column", data = data_wide$Electricity_bill_tab, stacking = "normal") %>%
+      hc_add_series(name = "historical_tab", type = "column", data = data_wide$historical_tab, stacking = "normal") %>%
+      hc_add_series(name = "live_update_tab", type = "column", data = data_wide$live_update_tab, stacking = "normal") %>%
+      hc_add_series(name = "summary_tab", type = "column", data = data_wide$summary_tab, stacking = "normal") %>%
+      hc_add_series(name = "comparative_tab", type = "column", data = data_wide$comparative_tab, stacking = "normal") %>%
+      hc_add_series(name = "solar_estimator_tab", type = "column", data = data_wide$solar_estimator_tab, stacking = "normal")
   })
   
   
