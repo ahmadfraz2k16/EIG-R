@@ -151,8 +151,8 @@ generate_billing_history <- function(first_customer_id, nBatchNo, nSubDiv, nRefN
   # Assign the header to the data frame
   names(html_table) <- header
   
-  # # Print the modified data frame
-  # print(html_table)
+  # Print the modified data frame
+  print(html_table)
   # # Save the DataFrame to a CSV file
   # write.csv(html_table, file = "billing_historyV2.csv", row.names = FALSE)
   # 
@@ -471,17 +471,32 @@ generate_billing_summary <- function(test){
   
   generate_billing_history(first_customer_id, nBatchNo, nSubDiv, nRefNo, strRU)
 }
-# Allow the user to choose a file interactively
-pdf_file <- file.choose()
+# # Allow the user to choose a file interactively
+# pdf_file <- file.choose()
+# 
+# # Read the PDF file
+# test <- pdf_text(pdf_file)
+# # test <- pdf_text("C:/Users/python/Documents/projR/MAR-2022/bills/sampleBillLESCO.pdf")
+# # cat(test)
+# 
+# 
+# generate_billing_summary(test)
 
-# Read the PDF file
-test <- pdf_text(pdf_file)
-# test <- pdf_text("C:/Users/python/Documents/projR/MAR-2022/bills/sampleBillLESCO.pdf")
-# cat(test)
 
+# Specify the directory containing the PDF files
+pdf_directory <- "C:/Users/python/Documents/projR/MAR-2022/bills/"
 
-generate_billing_summary(test)
+# List all PDF files in the directory
+pdf_files <- list.files(path = pdf_directory, pattern = "\\.pdf$", full.names = TRUE)
 
+# Loop through each PDF file
+for (pdf_file in pdf_files) {
+  # Read the PDF file
+  pdf_content <- pdf_text(pdf_file)
+  
+  # Pass the content to the generate_billing_summary function
+  generate_billing_summary(pdf_content)
+}
 # # Split the text into lines
 # lines <- strsplit(test, "\n")[[1]]
 # 
