@@ -1,4 +1,7 @@
 library(pdftools)
+library(rvest)
+library(dplyr)
+library (xml2)
 # Load the stringr package
 library(stringr)
 library(base)
@@ -67,7 +70,11 @@ process_billing_history <- function(test) {
   
   # Split the cleaned text into lines
   lines_clean <- strsplit(text_clean, "\n")[[1]]
-  
+  first_line <- lines_clean[1]
+  # Find the length of the first line up to the first newline character
+  first_line_length <- nchar(sub("\\n.*", "", first_line))
+  print("first line length")
+  print(first_line_length+10)
   # Extract the first 79 characters from each line
   extracted_text <- sapply(lines_clean, function(line) substr(line, 1, 79))
   
@@ -317,4 +324,67 @@ cat("DataFrame saved to 'billing_summary.csv'\n")
 # # trimmed_lines <- trimws(lines)
 
 
+
+library(httr)
+
+# Define the URL
+url <- "http://www.lesco.gov.pk:36269/Modules/CustomerBill/History.asp"
+
+# Define the payload
+payload <- list(
+  nBatchNo = 14,
+  nSubDiv = 11561,
+  nRefNo = 2802200,
+  strRU = "U",
+  submit_param = "submit_value"
+)
+
+# Define the headers as a named list
+headers <- c(
+  "Accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  "Accept-Encoding" = "gzip, deflate",
+  "Accept-Language" = "en-US,en;q=0.9",
+  "Cache-Control" = "max-age=0",
+  "Connection" = "keep-alive",
+  "Content-Type" = "application/x-www-form-urlencoded",
+  "Cookie" = "ASPSESSIONIDQSBSDCST=PBEILDAABJONLDEPJNGIHBBJ; ASPSESSIONIDCCRTBCRR=IBDIMPFAIJDLCANNDLGAFDOG; ASP.NET_SessionId=aop5mbhupeo1ff4sfxw4pmd0",
+  "Host" = "www.lesco.gov.pk:36269",
+  "Origin" = "http://www.lesco.gov.pk:36269",
+  "Referer" = "http://www.lesco.gov.pk:36269/Modules/CustomerBill/CustomerMenu.asp",
+  "Upgrade-Insecure-Requests" = "1",
+  "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0"
+)
+
+# Make the POST request with headers
+response <- httr::POST(
+  url,
+  body = payload,
+  encode = "form",
+  add_headers(.headers = headers)
+)
+
+# Get the content of the response
+content <- httr::content(response, "text")
+
+# Print the response content
+cat(content)
+
+
+
+doc <- read_html (content)
+
+table_node <- xml_find_first (doc, xpath = '//*[@id="ContentPane"]/table')
+
+table_string <- as.character (table_node)
+
+# print (table_string)
+
+# now using rvest and dplyr
+# Parse HTML
+html_table <- read_html(table_string) %>%
+  html_node("table") %>%
+  html_table()
+
+# Print the data frame
+print(html_table)
 
