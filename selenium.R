@@ -7,6 +7,7 @@ library(highcharter)
 library(lubridate)
 library(pdftools)
 library(stringr)
+library(tidyverse)
 # Read the CSV data
 df <- read.csv("log.csv", stringsAsFactors = FALSE)
 df$Time <- as.POSIXct(df$Time, format = "%Y-%m-%d %H:%M")
@@ -115,7 +116,16 @@ server <- function(input, output, session) {
     destination_path <- file.path(user_directory, new_file_name)
     # Copy the file to the destination directory with the new name
     file.copy(pdf_file$datapath, destination_path, overwrite = TRUE)
+    # data frame for csv file
+    # Create a DataFrame
+    meterReading_dataframe <- data.frame(username = username, billing_month = billing_month_pdf, reading_date = meter_reading_date )
     
+    # csv file name
+    csv_file_name <- paste0(input$username, "_", modified_string, ".csv")
+    # Save the DataFrame to a CSV file with the specified name
+    destination_path_csv <- file.path(user_directory, csv_file_name)
+    # Save the DataFrame to a CSV file
+    write_csv(meterReading_dataframe, destination_path_csv)
     # 
     # # Move the file to a specific directory (optional)
     # destination_directory <- "C:/Users/python/Documents/projR/MAR-2022/Bills_Check_Post"
@@ -124,7 +134,7 @@ server <- function(input, output, session) {
     
     # Display a success message
     output$status <- renderText({
-      paste("File uploaded successfully. Destination:", destination_path)
+      paste("Pdf uploaded & csv created successfully. Destination:", destination_path)
     })
     
     # You can perform additional actions here
