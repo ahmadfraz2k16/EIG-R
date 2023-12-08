@@ -320,6 +320,13 @@ ui <- dashboardPage(
     width = 250,
     selectInput("username", "Select Username", choices = unique(df$Username)),
     dateInput("billingMonth", "Select Billing Month", format = "yyyy-mm", startview = "year", value = Sys.Date()),
+    tags$head(
+      tags$style(HTML("
+    .datepicker {
+      z-index: 99999 !important;
+    }
+  "))
+    ),
     dateInput("meterReadingDate", "Select Meter Reading Date", format = "dd-mm-yyyy", value = Sys.Date())
   ),
   dashboardBody(
@@ -341,12 +348,6 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   observe({
     req(input$pdfFile)
-    
-    #test_file <- readBin(input$file_input$datapath, what="raw") 
-    
-    #writeBin(test_file, "myreport.pdf")
-    
-    #cat(input$file_input$datapath)
     
     file.copy(input$pdfFile$datapath,"www", overwrite = T)
     
