@@ -1,5 +1,6 @@
 # Load libraries
 library(shiny)
+library(shinydashboard)
 library(bslib)
 library(dplyr)
 library(tidyr)
@@ -13,45 +14,68 @@ df <- read.csv("log.csv", stringsAsFactors = FALSE)
 df$Time <- as.POSIXct(df$Time, format = "%Y-%m-%d %H:%M")
 unique(df$Tab)
 
+
 # UI
-ui <- fluidPage(
-  theme = bs_theme(base_color = "#f5f5f5", bg = "white", fg = "black"),
-  page_navbar(
-    nav_panel("Bills Dashboard",
-              card(
-                card_header(
-                  class = "bg-warning",
-                  "Bill Uploader"
-                ),
-                # Set minimum height of the card
-                style = "min-height: 800px;",
-                fluidRow(
-                  # Username dropdown
-                  column(4, selectInput("username", "Select Username", choices = unique(df$Username))),
-                  
-                  # Billing month dropdown (calendar type)
-                  column(4, dateInput("billingMonth", "Select Billing Month", format = "yyyy-mm", startview = "year", value = Sys.Date())),
-                  
-                  # Meter reading date input
-                  column(4, dateInput("meterReadingDate", "Select Meter Reading Date", format = "dd-mm-yyyy", value = Sys.Date())),
-                  column(4),
-                  # PDF file uploader and Upload button (spanned)
-                  column(3, 
-                         div(
-                           fileInput("pdfFile", "Upload PDF Bill", accept = ".pdf"),
-                           actionButton("uploadBtn", "Upload"),
-                           style = "padding-top: 27px;"
-                         )
-                  ),
-                  
-                  
-                  # Status message for successful upload
-                  verbatimTextOutput("status")
-                )
-              )
-    )
+ui <- dashboardPage(
+  dashboardHeader(title = "Bills Dashboard"),
+  dashboardSidebar(
+    width = 250,
+    selectInput("username", "Select Username", choices = unique(df$Username)),
+    dateInput("billingMonth", "Select Billing Month", format = "yyyy-mm", startview = "year", value = Sys.Date()),
+    dateInput("meterReadingDate", "Select Meter Reading Date", format = "dd-mm-yyyy", value = Sys.Date())
+  ),
+  dashboardBody(
+      div(
+        class = "content",
+        div(
+          fileInput("pdfFile", "Upload PDF Bill", accept = ".pdf"),
+          actionButton("uploadBtn", "Upload"),
+          style = "padding-top: 27px;",
+          verbatimTextOutput("status")
+        )
+      )
   )
 )
+
+
+# ui <- fluidPage(
+#   theme = bs_theme(base_color = "#f5f5f5", bg = "white", fg = "black"),
+#   page_navbar(
+#     nav_panel("Bills Dashboard",
+#               card(
+#                 card_header(
+#                   class = "bg-warning",
+#                   "Bill Uploader"
+#                 ),
+#                 # Set minimum height of the card
+#                 style = "min-height: 800px;",
+#                 fluidRow(
+#                   # Username dropdown
+#                   column(4, selectInput("username", "Select Username", choices = unique(df$Username))),
+#                   
+#                   # Billing month dropdown (calendar type)
+#                   column(4, dateInput("billingMonth", "Select Billing Month", format = "yyyy-mm", startview = "year", value = Sys.Date())),
+#                   
+#                   # Meter reading date input
+#                   column(4, dateInput("meterReadingDate", "Select Meter Reading Date", format = "dd-mm-yyyy", value = Sys.Date())),
+#                   column(4),
+#                   # PDF file uploader and Upload button (spanned)
+#                   column(3, 
+#                          div(
+#                            fileInput("pdfFile", "Upload PDF Bill", accept = ".pdf"),
+#                            actionButton("uploadBtn", "Upload"),
+#                            style = "padding-top: 27px;"
+#                          )
+#                   ),
+#                   
+#                   
+#                   # Status message for successful upload
+#                   verbatimTextOutput("status")
+#                 )
+#               )
+#     )
+#   )
+# )
 
 # Server version 3
 server <- function(input, output, session) {
@@ -149,6 +173,7 @@ server <- function(input, output, session) {
     # Additional actions you want to perform when the Upload button is clicked
   })
 }
+
 shinyApp(ui, server)
 # Server version 2
 # server <- function(input, output, session) {
