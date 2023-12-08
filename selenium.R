@@ -328,9 +328,10 @@ ui <- dashboardPage(
         div(
           fileInput("pdfFile", "Upload PDF Bill", accept = ".pdf"),
           actionButton("uploadBtn", "Upload"),
-          style = "padding-top: 27px;",
-          verbatimTextOutput("status")
-        )
+          style = "padding-top: 27px;padding-bottom: 27px;",
+          verbatimTextOutput("status"),
+        ),
+        div(uiOutput("pdfview"))
       )
   )
 )
@@ -338,6 +339,25 @@ ui <- dashboardPage(
 
 # Server version 3
 server <- function(input, output, session) {
+  observe({
+    req(input$pdfFile)
+    
+    #test_file <- readBin(input$file_input$datapath, what="raw") 
+    
+    #writeBin(test_file, "myreport.pdf")
+    
+    #cat(input$file_input$datapath)
+    
+    file.copy(input$pdfFile$datapath,"www", overwrite = T)
+    
+    
+    
+    output$pdfview <- renderUI({
+      tags$iframe(style="height:600px; width:100%", src="0.pdf")
+    })
+    
+  })
+  
   filtered_data <- reactive({
     # Extracting username, billing month, and meter reading date from input
     username <- input$username
