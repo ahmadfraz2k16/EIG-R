@@ -199,8 +199,12 @@ int <- function(x) {
 mw_file_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/collective_data.csv"
 file_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/max_min_avg.csv"
 peakhours_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/peakhours.csv"
+Totality_path <- "C:/Users/python/Documents/projR/processed_mw_sheets/Totalality.csv"
 
 # Read the CSV files
+totality_data <- read.csv(Totality_path)
+totality_data$Time <- ifelse(grepl(" ", totality_data$Time), totality_data$Time, paste(totality_data$Time, "00:00:00"))
+print(totality_data)
 mw_data <- read.csv(mw_file_path)
 mw_data$Time <- ifelse(grepl(" ", mw_data$Time), mw_data$Time, paste(mw_data$Time, "00:00:00"))
 str(mw_data)
@@ -213,8 +217,9 @@ data$Time <- as.POSIXct(data$Time, format = "%Y-%m-%d")
 peakhours_data$Time <- as.POSIXct(peakhours_data$Time, format = "%Y-%m-%d %H:%M")
 peakhours_data$Time <- as.POSIXct(peakhours_data$Time, format = "%m/%d/%Y %H:%M")
 mw_data$Time <- as.POSIXct(mw_data$Time, format = "%Y-%m-%d %H:%M", tz = "UTC")
-str(mw_data)
-head(mw_data)
+totality_data$Time <- as.POSIXct(totality_data$Time, format = "%m/%d/%Y %H:%M", tz = "UTC")
+str(totality_data)
+head(totality_data)
 # Initialize an empty global_df dataframe
 global_df <- data.frame(Time = as.POSIXct(character()), Name = character(), Energy = numeric())
 # Determine the minimum and maximum dates in the CSV mw_data
@@ -507,6 +512,19 @@ ui <- fluidPage(page_navbar(
                 
                 mainPanel(
                   DTOutput("filtered_data_table")
+                )
+              )),
+    nav_panel("Download Total", 
+              titlePanel("Data Filtering and Download Totals only"),
+              
+              sidebarLayout(
+                sidebarPanel(
+                  dateRangeInput("date_range_total", "Select Date Range", start = min(totality_data$Time), end = max(totality_data$Time), min = min(totality_data$Time), max = max(totality_data$Time)),
+                  downloadButton("download_data_total", "Download Data")
+                ),
+                
+                mainPanel(
+                  DTOutput("filtered_data_table_total")
                 )
               ))
   # )
@@ -1074,6 +1092,35 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       write.csv(filtered_data_download(), file, row.names = FALSE)
+    }
+  )
+  
+  
+  
+  
+  
+  # Filter data based on date selection
+  filtered_data_download_total <- reactive({
+    req(input$date_range_total)
+    # Add one day and subtract one second to the end date
+    end_date <- input$date_range_total[2] + days(1) - seconds(1)
+    filter(totality_data, between(Time, input$date_range_total[1], end_date))
+  })
+  
+  
+  # Show filtered data in a paginated DataTable
+  output$filtered_data_table_total <- renderDT({
+    formatted_data <- mutate(filtered_data_download_total(), Time = format(Time, "%Y-%m-%d %H:%M:%S"))
+    datatable(formatted_data, options = list(pageLength = 10))  # You can adjust 'pageLength' as needed
+  })
+  
+  # Download filtered data as CSV
+  output$download_data_total <- downloadHandler(
+    filename = function() {
+      paste("download_filtered_data_total.csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(filtered_data_download_total(), file, row.names = FALSE)
     }
   )
 }
